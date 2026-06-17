@@ -1,0 +1,219 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Meetings</h1>
+      <p class="page-sub">Schedule and manage team meetings</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openCreate()">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      New Meeting
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="mt-list">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton skeleton-row mt-skel"></div>
+      }
+    </div>
+  }
+
+  @if (!loading() && meetings().length === 0) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">📅</div>
+      <div class="empty-state-title">No meetings scheduled</div>
+      <div class="empty-state-sub">Create your first meeting to get started.</div>
+    </div>
+  }
+
+  @if (!loading() && meetings().length > 0) {
+    <div class="mt-list">
+      @for (meeting of meetings(); track meeting._id) {
+        <div class="card" [style.opacity]="isPast(meeting) ? '0.6' : '1'">
+          <div class="mt-row">
+
+            <!-- Date block -->
+            <div class="mt-date-block">
+              <div class="mt-date-dow">
+                {{ formatDate(meeting.startTime).split(',')[0] }}
+              </div>
+              <div class="mt-date-day">
+                {{ formatDate(meeting.startTime).split(' ')[2] }}
+              </div>
+              <div class="mt-date-mon">
+                {{ formatDate(meeting.startTime).split(' ')[1] }}
+              </div>
+            </div>
+
+            <!-- Info -->
+            <div class="mt-info">
+              <div class="mt-title-row">
+                <span class="mt-title">{{ meeting.title }}</span>
+                @if (isPast(meeting)) {
+                  <span class="mt-status mt-status-scheduled">Past</span>
+                }
+                @if (!isPast(meeting)) {
+                  @if (myRsvp(meeting) === 'accepted') {
+                    <span class="mt-status mt-rsvp-accept">Accepted</span>
+                  } @else if (myRsvp(meeting) === 'declined') {
+                    <span class="mt-status mt-rsvp-decline">Declined</span>
+                  } @else if (myRsvp(meeting) === 'tentative') {
+                    <span class="mt-status mt-rsvp-maybe">Tentative</span>
+                  } @else {
+                    <span class="mt-status mt-status-pending">Pending</span>
+                  }
+                }
+              </div>
+              <div class="mt-time">
+                {{ formatTime(meeting.startTime) }} – {{ formatTime(meeting.endTime) }} · {{ formatDate(meeting.startTime).split(',')[1]?.trim() }}
+              </div>
+              @if (meeting.agenda) {
+                <p class="mt-agenda">{{ meeting.agenda }}</p>
+              }
+              <!-- Invitees -->
+              @if ((meeting.invitees ?? []).length > 0) {
+                <div class="mt-invitees">
+                  <span class="mt-invitees-lbl">Invitees:</span>
+                  @for (inv of (meeting.invitees ?? []).slice(0,8); track inv.userId?._id ?? inv.userId) {
+                    <div class="av av-28 mt-av-sm" [title]="inv.userId?.username ?? inv.userId">
+                      {{ (inv.userId?.username ?? inv.userId ?? '?').charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                  @if ((meeting.invitees ?? []).length > 8) {
+                    <span class="mt-invitees-lbl">+{{ (meeting.invitees ?? []).length - 8 }}</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-actions">
+              @if (canJoinCall(meeting)) {
+                <button type="button" class="btn-primary mt-join-btn"
+                  (click)="joinCall(meeting)">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z"/>
+                  </svg>
+                  Join Call
+                </button>
+              }
+              @if (!isPast(meeting) && !isOrganizer(meeting)) {
+                <div class="mt-rsvp-group">
+                  <button type="button" class="mt-rsvp-accept mt-rsvp-btn"
+                    (click)="rsvp(meeting._id, 'accepted')">Accept</button>
+                  <button type="button" class="mt-rsvp-maybe mt-rsvp-btn"
+                    (click)="rsvp(meeting._id, 'tentative')">Tentative</button>
+                  <button type="button" class="mt-rsvp-decline mt-rsvp-btn"
+                    (click)="rsvp(meeting._id, 'declined')">Decline</button>
+                </div>
+              }
+              @if (isOrganizer(meeting) && !isPast(meeting)) {
+                <button type="button" class="btn-ghost mt-cancel-btn"
+                  (click)="cancelMeeting(meeting._id)">Cancel</button>
+              }
+            </div>
+
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── Create Meeting Modal ── -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box mt-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">New Meeting</h2>
+        <button type="button" class="modal-close" (click)="showCreate.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-form">
+
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input class="form-input" type="text" placeholder="Meeting title…"
+            [value]="title()" (input)="title.set($any($event.target).value)">
+        </div>
+
+        <div class="mt-grid-2">
+          <div class="form-group">
+            <label class="form-label">Start *</label>
+            <input class="form-input" type="datetime-local"
+              [value]="startTime()" (input)="startTime.set($any($event.target).value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End *</label>
+            <input class="form-input" type="datetime-local"
+              [value]="endTime()" (input)="endTime.set($any($event.target).value)">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Agenda</label>
+          <textarea class="form-input mt-textarea" rows="3" placeholder="What will you discuss?"
+            [value]="agenda()" (input)="agenda.set($any($event.target).value)"></textarea>
+        </div>
+
+        @if (channels().length > 0) {
+          <div class="form-group">
+            <label class="form-label">Host call in channel (optional)</label>
+            <select class="form-input"
+              [value]="selectedChannel()"
+              (change)="selectedChannel.set($any($event.target).value)">
+              <option value="">No channel — calendar entry only</option>
+              @for (ch of channels(); track ch._id) {
+                <option [value]="ch._id">{{ ch.name || 'Untitled room' }}</option>
+              }
+            </select>
+            <p class="mt-channel-hint">
+              When set, a “Join Call” button appears on the meeting at start time.
+            </p>
+          </div>
+        }
+
+        @if (members().length > 0) {
+          <div class="form-group">
+            <label class="form-label">Invite teammates</label>
+            <div class="mt-member-list">
+              @for (m of members(); track memberId(m)) {
+                <button type="button"
+                  class="mt-member-chip"
+                  [style.border-color]="isInvited(memberId(m)) ? 'var(--indigo)' : 'var(--border)'"
+                  [style.background]="isInvited(memberId(m)) ? 'var(--indigo-soft)' : 'transparent'"
+                  [style.color]="isInvited(memberId(m)) ? 'var(--indigo)' : 'var(--text-2)'"
+                  (click)="toggleInvitee(memberId(m))">
+                  <div class="av av-20 mt-av-xs">{{ memberName(m).charAt(0).toUpperCase() }}</div>
+                  {{ memberName(m) }}
+                  @if (isInvited(memberId(m))) { ✓ }
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (createError()) {
+          <div class="alert-error">{{ createError() }}</div>
+        }
+
+        <div class="mt-modal-actions">
+          <button type="button" class="btn-ghost" (click)="showCreate.set(false)">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="creating()" (click)="createMeeting()">
+            {{ creating() ? 'Creating…' : 'Create Meeting' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

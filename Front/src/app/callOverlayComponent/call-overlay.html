@@ -1,0 +1,145 @@
+<!-- ── Incoming Call Banner ────────────────────────────────────────────── -->
+@if (incomingCall()) {
+  <div class="incoming-call-toast">
+    <div class="incoming-call-icon">📞</div>
+    <div class="incoming-call-info">
+      <div class="incoming-call-name">{{ incomingCall()!.callerName }}</div>
+      <div class="incoming-call-sub">
+        Incoming {{ incomingCall()!.type === 'voice' ? 'voice' : 'video' }} call
+      </div>
+    </div>
+    <div class="incoming-call-actions">
+      <button type="button" class="call-accept-btn"  (click)="accept()">Accept</button>
+      <button type="button" class="call-decline-btn" (click)="decline()">Decline</button>
+    </div>
+  </div>
+}
+
+<!-- ── Active Call Panel (always in DOM so @ViewChild {static:true} works) ── -->
+<div class="call-fullpanel" [hidden]="!callService.activeCall() || minimized()">
+  <div class="call-bg">
+    <div class="call-header-bar">
+      <span class="call-status-dot"></span>
+      <span class="call-room-name">Call in progress</span>
+      <span class="call-pcnt">{{ callService.participants().length }} participant(s)</span>
+      <button type="button" class="call-minimize-btn" title="Minimize call"
+              (click)="minimized.set(true)">⬇</button>
+    </div>
+
+    <!-- Raised-hands queue (Teams-style) -->
+    @if (callService.raisedHands().length > 0) {
+      <div class="call-hands-strip">
+        @for (h of callService.raisedHands(); track h.userId) {
+          <span class="call-hand-chip">✋ {{ h.username }}</span>
+        }
+      </div>
+    }
+
+    <div class="call-remote-wrap" #remoteVideosEl>
+      @if (callService.participants().length === 0) {
+        <div class="call-waiting">
+          <div class="call-waiting-icon">📞</div>
+          <p>Waiting for others to join…</p>
+        </div>
+      }
+    </div>
+
+    <video #localVideoEl autoplay muted playsinline class="call-local-pip"></video>
+
+    <!-- In-call chat panel (ephemeral) -->
+    @if (chatOpen()) {
+      <div class="call-chat-panel">
+        <div class="call-chat-head">
+          <span>In-call chat</span>
+          <button type="button" class="call-chat-close" (click)="toggleChat()">✕</button>
+        </div>
+        <div class="call-chat-body">
+          @for (m of callService.inCallChat(); track $index) {
+            <div class="call-chat-msg" [class.call-chat-mine]="m.mine">
+              <span class="call-chat-author">{{ m.mine ? 'You' : m.fromUsername }}</span>
+              <span class="call-chat-text">{{ m.text }}</span>
+            </div>
+          } @empty {
+            <p class="call-chat-empty">No messages yet. Say hi 👋</p>
+          }
+        </div>
+        <form class="call-chat-form" (submit)="$event.preventDefault(); sendChat()">
+          <input class="call-chat-input" type="text" placeholder="Message… use @name to ping"
+                 [value]="chatDraft()" (input)="onChatInput($event)" />
+          <button type="submit" class="call-chat-send">Send</button>
+        </form>
+      </div>
+    }
+
+    @if (callService.callError()) {
+      <div class="call-error-banner">{{ callService.callError() }}</div>
+    }
+
+    <div class="call-controls">
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="callService.isMuted()"
+              (click)="callService.toggleMute()">
+        <span>{{ callService.isMuted() ? '🔇' : '🎤' }}</span>
+        {{ callService.isMuted() ? 'Unmute' : 'Mute' }}
+      </button>
+      <button type="button" class="call-ctrl-btn call-ctrl-end" (click)="end()">
+        <span>📵</span> End Call
+      </button>
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="callService.isCamOff()"
+              (click)="callService.toggleCamera()">
+        <span>{{ callService.isCamOff() ? '📷' : '🎥' }}</span>
+        {{ callService.isCamOff() ? 'Cam On' : 'Cam Off' }}
+      </button>
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="callService.isScreenSharing()"
+              (click)="callService.toggleScreenShare()">
+        <span>🖥️</span>
+        {{ callService.isScreenSharing() ? 'Stop Share' : 'Share' }}
+      </button>
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="callService.myHandRaised()"
+              (click)="toggleHand()">
+        <span>✋</span>
+        {{ callService.myHandRaised() ? 'Lower' : 'Raise' }}
+      </button>
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="chatOpen()"
+              (click)="toggleChat()">
+        <span>💬</span>
+        Chat
+        @if (callService.unreadChat() > 0) {
+          <span class="call-chat-badge">{{ callService.unreadChat() }}</span>
+        }
+      </button>
+      <button type="button" class="call-ctrl-btn"
+              [class.call-ctrl-active]="callService.isRecording()"
+              [disabled]="callService.recordingBusy()"
+              (click)="callService.toggleRecording()">
+        <span>{{ callService.isRecording() ? '⏺️' : '⏵' }}</span>
+        {{ callService.isRecording() ? 'Stop Rec' : 'Record' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Floating minimized call chip ─────────────────────────── -->
+@if (callService.activeCall() && minimized()) {
+  <div class="call-mini-chip">
+    <span class="call-mini-dot"></span>
+    <span class="call-mini-label">
+      {{ callService.participants().length > 0 ? callService.participants().length + ' in call' : 'Call active' }}
+    </span>
+    <button type="button" class="call-mini-restore" title="Restore call"
+            (click)="minimized.set(false)">⬆</button>
+    <button type="button" class="call-mini-end" title="End call" (click)="end()">📵</button>
+  </div>
+}
+
+<!-- ── Call error toast (when no active call) ── -->
+@if (!callService.activeCall() && callService.callError()) {
+  <div class="call-error-toast">
+    {{ callService.callError() }}
+    <button type="button" class="call-error-close" (click)="callService.callError.set('')">✕</button>
+  </div>
+}

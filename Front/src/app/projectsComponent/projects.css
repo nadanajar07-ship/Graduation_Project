@@ -1,0 +1,114 @@
+/* ══ Projects ═══════════════════════════════════════════════ */
+.prj-filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.prj-filter-btn.active {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+
+.prj-card-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.prj-card-item:hover  { background: var(--bg-hover); }
+.prj-card-item.active { border-color: var(--indigo); background: var(--indigo-soft); }
+
+.prj-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  background: var(--indigo-soft);
+  color: var(--indigo);
+  flex-shrink: 0;
+}
+
+/* Status badges */
+.prj-status {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+}
+.prj-status-planning   { background: var(--color-background-secondary); color: var(--text-2); }
+.prj-status-active     { background: var(--green-soft);  color: var(--green); }
+.prj-status-on-hold    { background: var(--amber-soft);  color: var(--amber); }
+.prj-status-completed  { background: var(--indigo-soft); color: var(--indigo); }
+.prj-status-cancelled  { background: var(--red-soft);    color: var(--red); }
+
+/* ── Layout ───────────────────────────────────────────────── */
+.prj-layout   { display: flex; gap: 20px; height: 100%; align-items: flex-start; }
+.prj-sidebar  { min-width: 260px; max-width: 290px; flex-shrink: 0; }
+.prj-header   { margin-bottom: 16px; }
+.prj-tabs     { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.prj-alert    { margin-bottom: 12px; font-size: 12px; }
+.prj-skeletons{ display: flex; flex-direction: column; gap: 8px; }
+.prj-skeleton-row { height: 60px; border-radius: 8px; }
+.prj-list     { display: flex; flex-direction: column; gap: 6px; }
+.prj-detail   { flex: 1; min-width: 0; }
+.prj-detail-card { padding: 20px; }
+
+/* ── Inline edit form ─────────────────────────────────────── */
+.prj-edit-card    { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.prj-edit-dates   { display: flex; gap: 4px; }
+.prj-edit-actions { display: flex; gap: 6px; }
+.prj-btn-sm       { font-size: 11px; padding: 4px 12px; }
+
+/* ── Card content ─────────────────────────────────────────── */
+.prj-card-row    { display: flex; align-items: center; gap: 8px; }
+.prj-card-main   { flex: 1; min-width: 0; }
+.prj-card-title  { font-size: 13px; font-weight: 500; color: var(--color-text-primary);
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prj-card-status { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.prj-card-dot    { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.prj-card-status-text { font-size: 11px; color: var(--color-text-tertiary); }
+.prj-card-actions { display: flex; gap: 4px; opacity: .6; }
+
+/* ── Detail panel ─────────────────────────────────────────── */
+.prj-detail-head  { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.prj-detail-title { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 4px; }
+.prj-detail-desc  { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 8px; }
+.prj-detail-meta  { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.prj-detail-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; border: 1px solid; }
+.prj-meta-text    { font-size: 11px; color: var(--color-text-tertiary); }
+.prj-status-select{ font-size: 12px; padding: 4px 8px; width: auto; }
+
+/* ── Members ──────────────────────────────────────────────── */
+.prj-members       { margin-bottom: 20px; }
+.prj-members-title { font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 10px; }
+.prj-members-empty { font-size: 12px; color: var(--color-text-tertiary); }
+.prj-members-list  { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.prj-member-row    { display: flex; align-items: center; gap: 10px; }
+.prj-member-av     { font-size: 12px; }
+.prj-member-name   { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+.prj-add-row       { display: flex; gap: 8px; align-items: center; }
+.prj-add-select    { flex: 1; font-size: 13px; }
+.prj-add-btn       { font-size: 12px; padding: 6px 14px; white-space: nowrap; }
+
+/* ── Empty detail ─────────────────────────────────────────── */
+.prj-empty-detail { flex: 1; display: flex; align-items: center; justify-content: center; }
+.prj-empty-inner  { text-align: center; color: var(--color-text-tertiary); }
+.prj-empty-icon   { font-size: 32px; margin-bottom: 8px; }
+.prj-empty-text   { font-size: 14px; }
+
+/* ── Modal ────────────────────────────────────────────────── */
+.prj-modal        { max-width: 460px; }
+.prj-modal-body   { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.prj-modal-dates  { display: flex; gap: 12px; }
+.prj-modal-actions{ display: flex; gap: 8px; justify-content: flex-end; }
+.prj-textarea     { resize: vertical; font-family: inherit; }
+
+/* ── Field sizing helpers ─────────────────────────────────── */
+.prj-fs-11 { font-size: 11px; }
+.prj-fs-12 { font-size: 12px; }
+.prj-fs-13 { font-size: 13px; }
+.prj-flex-1 { flex: 1; }

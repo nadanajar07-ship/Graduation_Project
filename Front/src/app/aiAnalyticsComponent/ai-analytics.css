@@ -1,0 +1,187 @@
+/* ── AI Workforce Analytics — professional SaaS dashboard ───── */
+.aia { max-width: 1280px; margin: 0 auto; }
+
+.aia-spark {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  font-size: .7em;
+  font-weight: 800;
+  padding: .12em .45em;
+  border-radius: 7px;
+  vertical-align: middle;
+  margin-right: .25rem;
+  letter-spacing: .02em;
+}
+.aia-sub { margin: .35rem 0 0; font-size: .82rem; color: var(--muted); }
+
+.aia-head-actions { display: flex; align-items: center; gap: .65rem; }
+.aia-engine-tag {
+  font-size: .7rem; font-weight: 600; color: var(--indigo);
+  background: var(--indigo-soft); padding: .35rem .65rem; border-radius: 999px;
+  white-space: nowrap;
+}
+.aia-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--card); border: 1.5px solid var(--border);
+  color: var(--text); border-radius: 10px; padding: .5rem .85rem;
+  font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.aia-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+.aia-btn:disabled { opacity: .55; cursor: default; }
+.aia-btn svg { width: 15px; height: 15px; }
+
+/* ── States ──────────────────────────────────────────────── */
+.aia-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem; padding: 4rem 1rem; color: var(--muted); text-align: center;
+}
+.aia-state svg { width: 42px; height: 42px; }
+.aia-error { color: var(--red); }
+.aia-spinner {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--indigo);
+  animation: aia-spin .8s linear infinite;
+}
+@keyframes aia-spin { to { transform: rotate(360deg); } }
+
+/* ── Insight cards ───────────────────────────────────────── */
+.aia-cards {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; margin-bottom: 1.25rem;
+}
+.aia-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.1rem 1.15rem; display: flex; align-items: center; gap: .9rem;
+  transition: transform .15s, box-shadow .15s;
+}
+.aia-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(30,30,46,.08); }
+.aia-card-ic {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.aia-card-ic svg { width: 22px; height: 22px; }
+.ic-emerald { background: var(--emerald-soft); color: var(--emerald); }
+.ic-amber   { background: var(--amber-soft);   color: var(--amber); }
+.ic-indigo  { background: var(--indigo-soft);  color: var(--indigo); }
+.ic-violet  { background: var(--violet-soft);  color: var(--violet); }
+.aia-card-body { display: flex; flex-direction: column; min-width: 0; }
+.aia-card-label { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.aia-card-value { font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aia-card-value.muted { color: var(--muted); }
+.aia-card-meta { font-size: .74rem; color: var(--muted); margin-top: .1rem; }
+
+/* ── Telemetry notice ────────────────────────────────────── */
+.aia-note {
+  display: flex; gap: .65rem; align-items: flex-start;
+  background: var(--amber-soft); border: 1px solid rgba(245,158,11,.25);
+  border-radius: 12px; padding: .85rem 1rem; margin-bottom: 1.25rem;
+  font-size: .8rem; color: #92600a; line-height: 1.5;
+}
+.aia-note svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--amber); margin-top: 1px; }
+
+/* ── Grid + panels ───────────────────────────────────────── */
+.aia-grid {
+  display: grid; grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 1rem; margin-bottom: 1.25rem;
+}
+.aia-panel {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.25rem; margin-bottom: 1.25rem;
+}
+.aia-grid .aia-panel { margin-bottom: 0; }
+.aia-panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; gap: .5rem; }
+.aia-panel-title { font-size: .95rem; font-weight: 700; color: var(--text); margin: 0; letter-spacing: -.01em; }
+.aia-panel-sub { font-size: .75rem; color: var(--muted); }
+
+/* ── Pie chart ───────────────────────────────────────────── */
+.aia-pie-wrap { position: relative; width: 180px; height: 180px; margin: .5rem auto 1.25rem; }
+.aia-pie { width: 100%; height: 100%; transform: rotate(0deg); }
+.aia-pie circle { transition: stroke-dasharray .6s ease; }
+.aia-pie-track { fill: none; stroke: var(--border); stroke-width: 8; }
+.aia-pie-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; pointer-events: none;
+}
+.aia-pie-big { font-size: 1.7rem; font-weight: 800; color: var(--text); letter-spacing: -.03em; line-height: 1; }
+.aia-pie-small { font-size: .72rem; color: var(--muted); margin-top: .15rem; }
+
+.aia-legend { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .75rem; }
+.aia-leg { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); }
+.aia-leg i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.aia-leg b { margin-left: auto; color: var(--text); font-weight: 700; }
+
+/* ── Comparison bars ─────────────────────────────────────── */
+.aia-bars { display: flex; flex-direction: column; gap: .7rem; }
+.aia-bar-row { display: flex; align-items: center; gap: .75rem; }
+.aia-bar-name { display: flex; align-items: center; gap: .5rem; width: 150px; flex-shrink: 0; }
+.aia-bar-label { font-size: .8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aia-bar-track { flex: 1; height: 12px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+.aia-bar-fill { height: 100%; border-radius: 999px; transition: width .6s ease; }
+.aia-bar-val { font-size: .8rem; font-weight: 700; color: var(--text); width: 42px; text-align: right; }
+
+.score-high { background: var(--emerald); }
+.score-mid  { background: var(--amber); }
+.score-low  { background: var(--red); }
+.aia-emp-score.score-high { color: var(--emerald); background: var(--emerald-soft); }
+.aia-emp-score.score-mid  { color: var(--amber);   background: var(--amber-soft); }
+.aia-emp-score.score-low  { color: var(--red);     background: rgba(239,68,68,.10); }
+
+/* ── Avatar ──────────────────────────────────────────────── */
+.aia-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff; font-size: .75rem; font-weight: 700;
+}
+.aia-avatar.lg { width: 38px; height: 38px; font-size: .9rem; }
+
+/* ── Top apps ────────────────────────────────────────────── */
+.aia-apps { display: flex; flex-direction: column; gap: .4rem; }
+.aia-app-row {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .6rem .75rem; background: var(--bg); border-radius: 10px;
+}
+.aia-app-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.aia-app-name { font-size: .82rem; font-weight: 600; color: var(--text); flex: 1; }
+.aia-app-cat { font-size: .68rem; font-weight: 600; text-transform: capitalize; padding: .15rem .5rem; border-radius: 999px; }
+.aia-app-time { font-size: .78rem; color: var(--muted); font-weight: 600; }
+.cat-productive  { background: var(--emerald-soft); color: var(--emerald); }
+.cat-distracting { background: rgba(239,68,68,.10); color: var(--red); }
+.cat-neutral     { background: var(--violet-soft);  color: var(--violet); }
+
+/* ── Per-employee analysis cards ─────────────────────────── */
+.aia-emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.aia-emp-card { border: 1px solid var(--border); border-radius: 14px; padding: 1rem; background: var(--card); }
+.aia-emp-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .9rem; }
+.aia-emp-name { font-size: .85rem; font-weight: 700; color: var(--text); display: block; }
+.aia-emp-role { font-size: .72rem; color: var(--muted); text-transform: capitalize; }
+.aia-emp-score { margin-left: auto; font-size: .85rem; font-weight: 800; padding: .25rem .55rem; border-radius: 8px; }
+
+.aia-emp-pie-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: .9rem; }
+.aia-emp-pie { width: 96px; height: 96px; flex-shrink: 0; }
+.aia-emp-mini-legend { display: flex; flex-direction: column; gap: .25rem; }
+.aia-emp-mini-legend span { display: flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--muted); }
+.aia-emp-mini-legend i { width: 8px; height: 8px; border-radius: 2px; }
+
+.aia-emp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; border-top: 1px solid var(--border); padding-top: .8rem; }
+.aia-emp-stats div { display: flex; flex-direction: column; text-align: center; }
+.aia-emp-stats b { font-size: .85rem; font-weight: 800; color: var(--text); }
+.aia-emp-stats span { font-size: .66rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-top: .1rem; }
+
+.aia-emp-apps { margin-top: .85rem; display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+.aia-emp-apps-title { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; width: 100%; margin-bottom: .15rem; }
+.aia-emp-app { font-size: .7rem; font-weight: 600; padding: .2rem .5rem; border-radius: 6px; }
+
+/* ── Empty / footer ──────────────────────────────────────── */
+.aia-empty { padding: 2rem 1rem; text-align: center; color: var(--muted); font-size: .82rem; }
+.aia-footer { font-size: .72rem; color: var(--muted); text-align: center; margin-top: .5rem; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .aia-cards { grid-template-columns: repeat(2, 1fr); }
+  .aia-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .aia-cards { grid-template-columns: 1fr; }
+}

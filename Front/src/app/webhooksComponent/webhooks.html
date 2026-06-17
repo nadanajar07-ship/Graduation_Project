@@ -1,0 +1,214 @@
+<div class="page">
+  <div class="page-header wh-header">
+    <div>
+      <h1 class="page-title">Webhooks</h1>
+      <p class="page-sub">Receive HTTP notifications when events occur in your organisation</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="showCreate.set(true)">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      New Webhook
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error wh-alert">{{ error() }}</div>
+  }
+
+  <!-- One-time secret banner -->
+  @if (createdSecret()) {
+    <div class="wh-warning-box">
+      <div class="wh-warning-title">⚠ Save your signing secret — it will never be shown again</div>
+      <div class="wh-secret-row">
+        <code class="wh-secret-code">{{ createdSecret() }}</code>
+        <div class="wh-secret-actions">
+          <button type="button" class="btn-ghost wh-btn-sm-nowrap" (click)="copySecret()">
+            @if (copiedSecret()) {
+              <svg class="h-3.5 w-3.5 wh-check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+              </svg>
+              Copied!
+            } @else {
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/>
+              </svg>
+              Copy
+            }
+          </button>
+          <button type="button" class="btn-ghost wh-btn-sm"
+            (click)="createdSecret.set('');copiedSecret.set(false)">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (testResult()) {
+    <div class="wh-test-result">
+      {{ testResult() }}
+      <button type="button" class="notif-delete-btn wh-ml-8" (click)="testResult.set('')">✕</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="wh-list">
+      @for (i of [1,2]; track i) {
+        <div class="skeleton skeleton-row wh-skeleton-row"></div>
+      }
+    </div>
+  }
+
+  @if (!loading() && webhooks().length === 0) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">🔔</div>
+      <div class="empty-state-title">No webhooks yet</div>
+      <div class="empty-state-sub">Create a webhook to receive real-time event notifications.</div>
+    </div>
+  }
+
+  <div class="wh-list">
+    @for (wh of webhooks(); track wh._id) {
+
+      @if (editingId() === wh._id) {
+        <!-- Edit form -->
+        <div class="card wh-edit-card">
+          <div class="wh-edit-col">
+            <div class="wh-edit-row">
+              <div class="form-group wh-flex-1">
+                <label class="form-label">Name</label>
+                <input class="form-input" type="text" [value]="editName()"
+                  (input)="editName.set($any($event.target).value)">
+              </div>
+              <div class="form-group wh-flex-2">
+                <label class="form-label">URL (https)</label>
+                <input class="form-input" type="url" [value]="editUrl()"
+                  (input)="editUrl.set($any($event.target).value)" placeholder="https://…">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label wh-label-mb">Events</label>
+              <div class="wh-events-wrap">
+                @for (ev of allEvents; track ev) {
+                  <button type="button"
+                    class="wh-event-chip"
+                    [class.active]="editEvents().includes(ev)"
+                    (click)="toggleEditEvent(ev)">{{ ev }}</button>
+                }
+              </div>
+            </div>
+            <div class="wh-active-row">
+              <label class="wh-checkbox-label">
+                <input type="checkbox" [checked]="editActive()"
+                  (change)="editActive.set($any($event.target).checked)">
+                Active
+              </label>
+              <span class="wh-spacer"></span>
+              <button type="button" class="btn-ghost wh-fs-12" (click)="cancelEdit()">Cancel</button>
+              <button type="button" class="btn-primary wh-fs-12" [disabled]="saving()"
+                (click)="saveEdit(wh._id)">{{ saving() ? 'Saving…' : 'Save' }}</button>
+            </div>
+          </div>
+        </div>
+
+      } @else {
+        <!-- Webhook card -->
+        <div class="card wh-card">
+          <div class="wh-card-row">
+            <div class="wh-dot-wrap">
+              <span class="wh-dot" [style.background]="wh.isActive ? '#10b981' : '#9ca3af'"></span>
+            </div>
+            <div class="wh-card-main">
+              <div class="wh-title-row">
+                <span class="wh-name">{{ wh.name }}</span>
+                @if (!wh.isActive) {
+                  <span class="wh-badge-inactive">Inactive</span>
+                }
+              </div>
+              <div class="wh-url">
+                {{ wh.targetUrl }}
+              </div>
+              <div class="wh-chips-row">
+                @for (ev of (wh.events ?? []); track ev) {
+                  <span class="wh-event-tag">{{ ev }}</span>
+                }
+              </div>
+            </div>
+            <div class="wh-card-actions">
+              <button type="button" class="btn-ghost wh-btn-xs"
+                [disabled]="testingId() === wh._id"
+                (click)="testWebhook(wh._id)">
+                {{ testingId() === wh._id ? 'Testing…' : 'Test' }}
+              </button>
+              <button type="button" class="btn-ghost wh-btn-xs"
+                title="Rotate signing secret"
+                (click)="rotateSecret(wh._id)">Rotate</button>
+              <button type="button" class="notif-delete-btn" title="Edit" (click)="startEdit(wh)">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Z"/>
+                </svg>
+              </button>
+              <button type="button" class="notif-delete-btn" title="Delete" (click)="deleteWebhook(wh._id)">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+    }
+  </div>
+</div>
+
+<!-- Create modal -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box wh-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">New Webhook</h2>
+        <button type="button" class="modal-close" (click)="showCreate.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="wh-modal-body">
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input class="form-input" type="text" placeholder="e.g. Slack Alerts"
+            [value]="newName()" (input)="newName.set($any($event.target).value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Endpoint URL * (must be https)</label>
+          <input class="form-input" type="url" placeholder="https://your-server.com/hook"
+            [value]="newUrl()" (input)="newUrl.set($any($event.target).value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label wh-label-mb">Events * (select at least one)</label>
+          <div class="wh-events-wrap">
+            @for (ev of allEvents; track ev) {
+              <button type="button"
+                class="wh-event-chip"
+                [class.active]="newEvents().includes(ev)"
+                (click)="toggleNewEvent(ev)">{{ ev }}</button>
+            }
+          </div>
+        </div>
+        @if (createError()) {
+          <div class="alert-error wh-fs-13">{{ createError() }}</div>
+        }
+        <div class="wh-info-box">
+          A signing secret will be generated and shown <strong>once</strong> after creation. Store it securely.
+        </div>
+        <div class="wh-modal-actions">
+          <button type="button" class="btn-ghost" (click)="showCreate.set(false)">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="creating()" (click)="createWebhook()">
+            {{ creating() ? 'Creating…' : 'Create Webhook' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

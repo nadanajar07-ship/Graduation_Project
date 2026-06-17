@@ -1,0 +1,115 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Reminders</h1>
+      <p class="page-sub">Personal reminders and nudges</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="showCreate.set(true)">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      New Reminder
+    </button>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-bar">
+    @for (tab of [{label:'Upcoming', value:'pending'},{label:'Sent', value:'sent'},{label:'All', value:''}]; track tab.value) {
+      <button type="button"
+        class="filter-pill"
+        [style.border-color]="filterStatus()===tab.value ? 'var(--indigo)' : 'var(--border)'"
+        [style.background]="filterStatus()===tab.value ? 'var(--indigo-soft)' : 'transparent'"
+        [style.color]="filterStatus()===tab.value ? 'var(--indigo)' : 'var(--text-2)'"
+        (click)="setFilter($any(tab.value))">{{ tab.label }}</button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="rm-skel-list">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton skeleton-row rm-skel"></div>
+      }
+    </div>
+  }
+
+  @if (!loading() && reminders().length === 0) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">⏰</div>
+      <div class="empty-state-title">No reminders</div>
+      <div class="empty-state-sub">Create a reminder to get notified at the right time.</div>
+    </div>
+  }
+
+  @if (!loading() && reminders().length > 0) {
+    <div class="rm-list">
+      @for (r of reminders(); track r._id) {
+        <div class="card rm-card">
+          <div class="rm-row">
+            <div class="rm-dot"
+                 [style.background]="statusColor(r.status)"></div>
+            <div class="rm-body">
+              <p class="rm-text">{{ r.text }}</p>
+              <span class="rm-meta">
+                {{ formatDateTime(r.triggerAt) }}
+                @if (isPast(r) && r.status === 'Pending') {
+                  <span class="rm-overdue">· Overdue</span>
+                }
+              </span>
+            </div>
+            <span class="rm-status"
+                  [style.background]="statusColor(r.status) + '18'"
+                  [style.color]="statusColor(r.status)">{{ r.status }}</span>
+            @if (r.status === 'Pending') {
+              <button type="button" class="notif-delete-btn" (click)="cancel(r._id)" title="Cancel reminder">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Create modal -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box rm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">New Reminder</h2>
+        <button type="button" class="modal-close" (click)="showCreate.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="rm-form">
+        <div class="form-group">
+          <label class="form-label">Reminder text *</label>
+          <textarea class="form-input rm-textarea" rows="3" placeholder="What do you want to be reminded about?"
+            [value]="text()" (input)="text.set($any($event.target).value)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remind me at *</label>
+          <input class="form-input" type="datetime-local"
+            [value]="triggerAt()" (input)="triggerAt.set($any($event.target).value)">
+        </div>
+        @if (createError()) {
+          <div class="alert-error">{{ createError() }}</div>
+        }
+        <div class="rm-modal-actions">
+          <button type="button" class="btn-ghost" (click)="showCreate.set(false)">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="creating()" (click)="create()">
+            {{ creating() ? 'Creating…' : 'Set Reminder' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,334 @@
+<div class="page">
+  <a routerLink="/dashboard/tasks" class="back-link">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+    </svg>
+    Back to Tasks
+  </a>
+
+  @if (loading()) {
+    <div class="td-loading">Loading task…</div>
+  }
+
+  @if (errorMsg()) {
+    <div class="alert-error td-alert">{{ errorMsg() }}</div>
+  }
+
+  @if (task(); as t) {
+    <div class="td-layout">
+      <!-- ── Left column ── -->
+      <div>
+
+        <!-- Task header card -->
+        <div class="card card-spacing-bottom">
+          <div class="td-badges">
+            <span class="badge" [style.background]="statusColor(t.status) + '18'" [style.color]="statusColor(t.status)">
+              {{ statusLabel(t.status) }}
+            </span>
+            <span class="badge" [style.background]="priorityColor(t.priority) + '18'" [style.color]="priorityColor(t.priority)">
+              {{ t.priority | titlecase }} Priority
+            </span>
+            <span class="td-id">#{{ t.id.slice(-6).toUpperCase() }}</span>
+          </div>
+
+          <h1 class="td-title">{{ t.title }}</h1>
+
+          @if (t.description) {
+            <p class="td-desc">{{ t.description }}</p>
+          }
+
+          <div class="td-meta-grid">
+            <div class="td-meta-item">
+              <span class="td-meta-lbl">Assignee</span>
+              <div class="td-meta-inline">
+                <div class="meta-info-flex">
+                  <div class="av av-32 av2 av-small" [style.background]="t.assigneeColor">{{ t.assigneeInitial }}</div>
+                  <span class="meta-info-text">{{ t.assignee || 'Unassigned' }}</span>
+                </div>
+                @if (showAssigneeSelect()) {
+                  <select class="form-input td-assignee-select"
+                    (change)="changeAssignee($any($event.target).value || null)"
+                    (blur)="showAssigneeSelect.set(false)">
+                    <option value="">— Unassign —</option>
+                    @for (m of orgMembers(); track memberId(m)) {
+                      <option [value]="memberId(m)" [selected]="memberId(m) === t.assigneeId">{{ memberName(m) }}</option>
+                    }
+                  </select>
+                } @else {
+                  <button type="button" class="btn-ghost td-btn-xs" [disabled]="assigningUser()"
+                    (click)="showAssigneeSelect.set(true)">
+                    {{ assigningUser() ? '…' : 'Change' }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="td-meta-item">
+              <span class="td-meta-lbl">Reporter</span>
+              <span class="td-meta-val">{{ t.reporter || 'Unknown' }}</span>
+            </div>
+            <div class="td-meta-item">
+              <span class="td-meta-lbl">Due Date</span>
+              @if (editingDueDate()) {
+                <div class="td-due-edit">
+                  <input type="date" class="td-date-input"
+                    [ngModel]="dueDateValue()" (ngModelChange)="dueDateValue.set($event)"/>
+                  <button type="button" class="btn-primary td-btn-save"
+                    [disabled]="savingDueDate()" (click)="saveDueDate()">{{ savingDueDate() ? '…' : 'Save' }}</button>
+                  <button type="button" class="btn-ghost td-btn-cancel"
+                    (click)="cancelEditDueDate()">Cancel</button>
+                </div>
+              } @else {
+                <span class="td-meta-val td-due-val"
+                  (click)="startEditDueDate()" title="Click to edit due date">
+                  {{ (t.dueDate | date:'MMM d, y') || 'Set due date' }}
+                </span>
+              }
+            </div>
+            <div class="td-meta-item">
+              <span class="td-meta-lbl">Sprint</span>
+              <div class="td-meta-inline">
+                @if (showSprintSelect()) {
+                  <select class="form-input td-sprint-select"
+                    (change)="changeSprint($any($event.target).value || null)"
+                    (blur)="showSprintSelect.set(false)">
+                    <option value="">— No Sprint —</option>
+                    @for (sp of sprintOptions(); track sp._id) {
+                      <option [value]="sp._id" [selected]="sp._id === t.sprintId">{{ sp.name }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="td-meta-val">{{ t.sprint || 'None' }}</span>
+                  <button type="button" class="btn-ghost td-btn-xs" [disabled]="changingSprintId()"
+                    (click)="showSprintSelect.set(true)">
+                    {{ changingSprintId() ? '…' : (t.sprint ? 'Change' : 'Assign') }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="td-meta-item">
+              <span class="td-meta-lbl">Type</span>
+              <span class="td-meta-val">{{ workTypeIcon(t.workType) }} {{ t.workType | titlecase }}</span>
+            </div>
+            @if (t.estimated > 0) {
+              <div class="td-meta-item">
+                <span class="td-meta-lbl">Points</span>
+                <span class="td-meta-val">{{ t.estimated }}</span>
+              </div>
+            }
+          </div>
+
+          @if (t.labels.length > 0) {
+            <div class="td-labels">
+              @for (label of t.labels; track label) {
+                <span class="td-label">
+                  {{ label }}
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Progress bar -->
+          <div class="td-prog-section">
+            <div class="td-prog-header">
+              <span class="prog-label">Progress</span>
+              <span class="td-prog-pct">{{ t.progress }}%</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-bar prog-accent" [style.width]="t.progress + '%'"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments card -->
+        <div class="card card-spacing-bottom">
+          <div class="card-title card-title-spacing">
+            Comments
+            @if (comments().length > 0) {
+              <span class="td-count">({{ comments().length }})</span>
+            }
+          </div>
+
+          @if (commentsLoading()) {
+            <div class="td-loading-sm">Loading…</div>
+          }
+
+          @if (!commentsLoading() && comments().length === 0) {
+            <div class="td-loading-sm">No comments yet.</div>
+          }
+
+          <div class="td-comments-list">
+            @for (comment of comments(); track comment._id) {
+              <div class="td-comment-row">
+                <div class="av av-32 av2 av-small td-comment-av">
+                  {{ comment.createdBy?.username?.charAt(0)?.toUpperCase() || '?' }}
+                </div>
+                <div class="td-comment-main">
+                  <div class="td-comment-head">
+                    <span class="td-comment-author">{{ comment.createdBy?.username || 'Unknown' }}</span>
+                    <span class="td-comment-time">{{ timeAgo(comment.createdAt) }}</span>
+                    @if (comment.createdBy?._id === currentUser()?._id) {
+                      <button class="notif-delete-btn td-opacity-7" type="button" (click)="startEditComment(comment)" title="Edit">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Z"/>
+                        </svg>
+                      </button>
+                      <button class="notif-delete-btn" type="button" (click)="deleteComment(comment._id)" title="Delete">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                  @if (editingCommentId() === comment._id) {
+                    <div class="td-comment-edit">
+                      <textarea [value]="editCommentText()" (input)="editCommentText.set($any($event.target).value)"
+                        rows="2" class="td-comment-textarea"></textarea>
+                      <div class="td-edit-actions">
+                        <button type="button" class="btn-primary td-btn-save" [disabled]="savingComment()" (click)="saveEditComment(comment._id)">{{ savingComment() ? '…' : 'Save' }}</button>
+                        <button type="button" class="btn-ghost td-fs-11" (click)="cancelEditComment()">Cancel</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <p class="td-comment-text">{{ comment.content }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Add comment form -->
+          <div class="td-comment-form">
+            <textarea
+              [value]="newComment()"
+              (input)="newComment.set($any($event.target).value)"
+              placeholder="Write a comment…"
+              rows="2"
+              class="td-add-textarea"
+            ></textarea>
+            @if (commentError()) {
+              <div class="alert-error td-fs-12">{{ commentError() }}</div>
+            }
+            <div class="td-form-actions">
+              <button
+                type="button"
+                class="btn-primary td-btn-md"
+                [disabled]="submittingComment() || !newComment().trim()"
+                (click)="addComment()"
+              >{{ submittingComment() ? 'Posting…' : 'Post Comment' }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dependencies card -->
+        <div class="card card-spacing-bottom">
+          <div class="card-title card-title-spacing td-card-title-flex">
+            <span>Blocked By</span>
+            @if (dependencies().length > 0) {
+              <span class="td-count">({{ dependencies().length }})</span>
+            }
+            <span class="td-spacer"></span>
+            <button type="button" class="btn-ghost td-btn-xs"
+              (click)="showAddDep.set(!showAddDep())">+ Add</button>
+          </div>
+
+          @if (depsLoading()) {
+            <div class="td-loading-xs">Loading…</div>
+          }
+
+          @if (!depsLoading() && dependencies().length === 0) {
+            <div class="td-empty-xs">No blockers.</div>
+          }
+
+          <div class="td-dep-list">
+            @for (dep of dependencies(); track depId(dep)) {
+              <div class="td-dep-row">
+                <span class="td-blocker-chip">Blocker</span>
+                <span class="td-dep-title">{{ depTitle(dep) }}</span>
+                <button type="button" class="notif-delete-btn" (click)="removeDependency(depId(dep))" title="Remove">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (showAddDep()) {
+            <div class="td-add-row">
+              <select class="form-input td-add-select"
+                [value]="selectedBlockerId()" (change)="selectedBlockerId.set($any($event.target).value)">
+                <option value="">Select a blocking task…</option>
+                @for (tk of spaceTasks(); track tk.id) {
+                  <option [value]="tk.id">{{ tk.title }}</option>
+                }
+              </select>
+              <button type="button" class="btn-primary td-btn-add"
+                [disabled]="!selectedBlockerId() || addingDep()"
+                (click)="addDependency()">{{ addingDep() ? '…' : 'Add' }}</button>
+            </div>
+          }
+        </div>
+
+        <!-- Subtasks card -->
+        <div class="card card-spacing-bottom">
+          <div class="card-title card-title-spacing td-card-title-flex">
+            <span>Subtasks</span>
+            @if (subtasks().length > 0) {
+              <span class="td-count">({{ subtasks().length }})</span>
+            }
+          </div>
+
+          @if (subtasksLoading()) {
+            <div class="td-loading-xs">Loading…</div>
+          }
+
+          @if (!subtasksLoading() && subtasks().length === 0) {
+            <div class="td-empty-xs">No subtasks yet.</div>
+          }
+
+          <div class="td-sub-list">
+            @for (sub of subtasks(); track sub._id) {
+              <div class="td-dep-row">
+                <span class="td-sub-dot"></span>
+                <a [routerLink]="['/dashboard/tasks', sub._id]" class="td-sub-link"
+                   [title]="subtaskTitle(sub)">{{ subtaskTitle(sub) }}</a>
+                <span class="td-sub-status">
+                  {{ subtaskStatus(sub) }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="td-sub-add">
+            <input class="form-input td-add-select" type="text"
+              placeholder="New subtask title…"
+              [value]="newSubtaskTitle()"
+              (input)="newSubtaskTitle.set($any($event.target).value)"
+              (keydown.enter)="addSubtask()">
+            <button type="button" class="btn-primary td-btn-add"
+              [disabled]="!newSubtaskTitle().trim() || addingSubtask()"
+              (click)="addSubtask()">{{ addingSubtask() ? '…' : 'Add' }}</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right column ── -->
+      <div>
+        <!-- Time tracking -->
+        @if (t.estimated > 0) {
+          <div class="card card-spacing-bottom">
+            <div class="card-title card-title-spacing">Time Tracking</div>
+            <div class="tt-display">
+              <span class="tt-logged">{{ t.logged }}h</span>
+              <span class="tt-of">logged of {{ t.estimated }}h estimated</span>
+            </div>
+            <div class="prog-wrap prog-spacing">
+              <div class="prog-bar prog-accent" [style.width]="(t.estimated > 0 ? t.logged / t.estimated * 100 : 0) + '%'"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

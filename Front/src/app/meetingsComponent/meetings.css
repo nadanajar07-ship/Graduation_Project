@@ -1,0 +1,55 @@
+/* ══ Meetings ═══════════════════════════════════════════════ */
+.mt-status {
+  font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 500;
+}
+.mt-status-scheduled { background: var(--color-background-secondary); color: var(--text-2); }
+.mt-status-active    { background: var(--green-soft);  color: var(--green); }
+.mt-status-cancelled { background: var(--red-soft);    color: var(--red); }
+.mt-status-completed { background: var(--amber-soft);  color: var(--amber); }
+.mt-status-pending   { background: var(--indigo-soft); color: var(--indigo); }
+
+.mt-rsvp-accept  { background: var(--green-soft);  color: var(--green);  border: 1px solid rgba(34,197,94,.3); }
+.mt-rsvp-decline { background: var(--red-soft);    color: var(--red);    border: 1px solid rgba(239,68,68,.3); }
+.mt-rsvp-maybe   { background: var(--amber-soft);  color: var(--amber);  border: 1px solid rgba(245,158,11,.3); }
+
+.mt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: box-shadow .15s;
+  cursor: pointer;
+}
+.mt-card:hover { box-shadow: var(--shadow-sm); }
+.mt-card.active { border-color: var(--indigo); }
+
+/* ── extracted inline styles ──────────────────────────── */
+.mt-list { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+.mt-skel { height:80px; border-radius:10px; }
+.mt-row { display:flex; gap:16px; align-items:flex-start; }
+.mt-date-block { text-align:center; min-width:52px; background:var(--color-background-secondary); border-radius:8px; padding:8px 4px; flex-shrink:0; }
+.mt-date-dow { font-size:11px; color:var(--color-text-tertiary); text-transform:uppercase; letter-spacing:.05em; }
+.mt-date-day { font-size:22px; font-weight:700; color:var(--color-text-primary); line-height:1.1; }
+.mt-date-mon { font-size:10px; color:var(--color-text-tertiary); }
+.mt-info { flex:1; min-width:0; }
+.mt-title-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.mt-title { font-size:15px; font-weight:600; color:var(--color-text-primary); }
+.mt-time { font-size:12px; color:var(--color-text-secondary); margin-top:3px; }
+.mt-agenda { font-size:12px; color:var(--color-text-tertiary); margin:6px 0 0; white-space:pre-wrap; }
+.mt-invitees { display:flex; gap:4px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+.mt-invitees-lbl { font-size:11px; color:var(--color-text-tertiary); }
+.mt-av-sm { font-size:10px; }
+.mt-actions { display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0; }
+.mt-rsvp-group { display:flex; gap:4px; }
+.mt-rsvp-btn { font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; }
+.mt-cancel-btn { font-size:11px; color:var(--color-text-tertiary); }
+.mt-join-btn { display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px; }
+.mt-channel-hint { font-size:11px; color:var(--color-text-tertiary); margin-top:4px; }
+.mt-modal { max-width:540px; }
+.mt-form { display:flex; flex-direction:column; gap:14px; margin-top:16px; }
+.mt-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.mt-textarea { resize:vertical; }
+.mt-member-list { display:flex; flex-wrap:wrap; gap:6px; max-height:140px; overflow-y:auto; padding:2px; }
+.mt-member-chip { display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; border:1px solid; font-size:12px; cursor:pointer; transition:all .15s; }
+.mt-av-xs { font-size:9px; }
+.mt-modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:4px; }

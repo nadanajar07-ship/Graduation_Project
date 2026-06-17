@@ -1,0 +1,101 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Audit Logs</h1>
+      <p class="page-sub">Security &amp; compliance trail for your organization</p>
+    </div>
+    @if (total() > 0) {
+      <span class="aud-total">{{ total() }} events</span>
+    }
+  </div>
+
+  <!-- Filter toolbar -->
+  <div class="aud-toolbar">
+    <div class="act-filters aud-chips">
+      @for (f of actionFilters; track f.key) {
+        <button type="button" class="act-chip" [class.act-chip-active]="activeAction() === f.key"
+                (click)="setAction(f.key)">{{ f.label }}</button>
+      }
+    </div>
+
+    <div class="aud-controls">
+      <input class="input aud-search" type="text" placeholder="Search action, IP, target…"
+             [ngModel]="search()" (ngModelChange)="search.set($event)"
+             (keyup.enter)="applyFilters()" />
+
+      <select class="input aud-select" [ngModel]="outcome()" (ngModelChange)="setOutcome($event)">
+        <option value="">Any outcome</option>
+        <option value="success">Success</option>
+        <option value="failure">Failure</option>
+        <option value="denied">Denied</option>
+      </select>
+
+      <input class="input aud-date" type="date" [ngModel]="fromDate()"
+             (ngModelChange)="fromDate.set($event)" title="From date" />
+      <input class="input aud-date" type="date" [ngModel]="toDate()"
+             (ngModelChange)="toDate.set($event)" title="To date" />
+
+      <button type="button" class="btn-primary aud-apply" (click)="applyFilters()">Apply</button>
+      @if (hasFilters()) {
+        <button type="button" class="btn-ghost btn-ghost-small" (click)="clearFilters()">Clear</button>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="aud-list">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="skeleton skeleton-row skel-row-70"></div>
+      }
+    </div>
+  } @else if (logs().length === 0 && !error()) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">🛡️</div>
+      <div class="empty-state-title">No audit events</div>
+      <div class="empty-state-sub">
+        Security-relevant actions — logins, role changes, deletions — will be recorded here.
+      </div>
+    </div>
+  } @else if (!error()) {
+    <div class="aud-list">
+      @for (log of logs(); track log._id) {
+        <div class="aud-row">
+          <div class="aud-actor-av av av-36">{{ actorInitial(log) }}</div>
+
+          <div class="aud-main">
+            <div class="aud-line">
+              <span class="aud-actor">{{ actorName(log) }}</span>
+              <span class="aud-action">{{ actionLabel(log) }}</span>
+              <span class="aud-badge" [class]="domainClass(log)">{{ domain(log) }}</span>
+              @if (log.outcome !== 'success') {
+                <span class="aud-out" [class]="outcomeClass(log)">{{ log.outcome }}</span>
+              }
+            </div>
+            <div class="aud-meta">
+              @if (target(log)) { <span class="aud-target">{{ target(log) }}</span><span class="aud-dot">·</span> }
+              @if (log.ipAddress) { <span class="aud-ip">{{ log.ipAddress }}</span><span class="aud-dot">·</span> }
+              <span class="aud-when">{{ when(log.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (pages() > 1) {
+      <div class="aud-pager">
+        <button type="button" class="btn-ghost btn-ghost-small" [disabled]="page() === 1" (click)="prevPage()">
+          ‹ Prev
+        </button>
+        <span class="aud-page-info">Page {{ page() }} of {{ pages() }}</span>
+        <button type="button" class="btn-ghost btn-ghost-small" [disabled]="page() === pages()" (click)="nextPage()">
+          Next ›
+        </button>
+      </div>
+    }
+  }
+</div>

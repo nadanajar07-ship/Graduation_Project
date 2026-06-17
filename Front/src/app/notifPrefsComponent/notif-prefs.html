@@ -1,0 +1,91 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Notification Preferences</h1>
+      <p class="page-sub">Choose how and when you receive notifications</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="np-skeleton-wrap">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="card prefs-card">
+
+      <!-- Mute all -->
+      <div class="pref-row" [class.pref-muted]="prefs().muted">
+        <div class="pref-info">
+          <span class="pref-label">Mute all notifications</span>
+          <span class="pref-sub">Pause all notifications globally</span>
+        </div>
+        <button type="button" class="toggle-btn" [class.on]="prefs().muted" (click)="toggle('muted')">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <hr class="pref-divider">
+
+      <!-- In-app -->
+      <div class="pref-row" [class.disabled]="prefs().muted">
+        <div class="pref-info">
+          <span class="pref-label">In-app notifications</span>
+          <span class="pref-sub">Show notification bell badge and real-time popups</span>
+        </div>
+        <button type="button" class="toggle-btn" [class.on]="prefs().inApp" [disabled]="prefs().muted" (click)="toggle('inApp')">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <!-- Email -->
+      <div class="pref-row" [class.disabled]="prefs().muted">
+        <div class="pref-info">
+          <span class="pref-label">Email notifications</span>
+          <span class="pref-sub">Receive important updates via email</span>
+        </div>
+        <button type="button" class="toggle-btn" [class.on]="prefs().email" [disabled]="prefs().muted" (click)="toggle('email')">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <!-- Push -->
+      <div class="pref-row" [class.disabled]="prefs().muted">
+        <div class="pref-info">
+          <span class="pref-label">Push notifications</span>
+          <span class="pref-sub">Browser push notifications when you're not active</span>
+        </div>
+        <button type="button" class="toggle-btn" [class.on]="prefs().push" [disabled]="prefs().muted" (click)="toggle('push')">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <button type="button" class="btn-primary self-start" [disabled]="saving()" (click)="save()">
+        {{ saving() ? 'Saving…' : 'Save Preferences' }}
+      </button>
+    </div>
+  }
+</div>
+
+<style>
+.pref-row      { display:flex;align-items:center;justify-content:space-between;gap:1rem; }
+.pref-row.pref-muted { opacity:.5; }
+.pref-row.disabled   { opacity:.5; pointer-events:none; }
+.pref-info     { display:flex;flex-direction:column;gap:.2rem; }
+.pref-label    { font-size:.88rem;font-weight:600;color:var(--color-text-primary); }
+.pref-sub      { font-size:.76rem;color:var(--color-text-secondary); }
+.toggle-btn    {
+  position:relative;width:44px;height:24px;border-radius:12px;
+  border:none;cursor:pointer;flex-shrink:0;
+  background:var(--border);transition:background .2s;
+}
+.toggle-btn.on { background:var(--indigo); }
+.toggle-btn:disabled { cursor:not-allowed; }
+.toggle-knob   {
+  position:absolute;top:3px;left:3px;width:18px;height:18px;
+  border-radius:50%;background:#fff;transition:transform .2s;
+}
+.toggle-btn.on .toggle-knob { transform:translateX(20px); }
+</style>

@@ -1,0 +1,190 @@
+<div class="page tm-layout">
+
+  <!-- Teams list -->
+  <div class="tm-sidebar">
+    <div class="page-header tm-header">
+      <div>
+        <h1 class="page-title">Teams</h1>
+        <p class="page-sub">Manage your organisation teams</p>
+      </div>
+      @if (canManage) {
+        <button type="button" class="btn-primary" (click)="showCreate.set(true)">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+        </button>
+      }
+    </div>
+
+    @if (error()) { <div class="alert-error tm-alert">{{ error() }}</div> }
+
+    @if (loading()) {
+      <div class="tm-skeletons">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton skeleton-row tm-skeleton-row"></div>
+        }
+      </div>
+    }
+
+    @if (!loading() && teams().length === 0) {
+      <div class="empty-state-full">
+        <div class="empty-state-icon">👥</div>
+        <div class="empty-state-title">No teams yet</div>
+        <div class="empty-state-sub">Create your first team.</div>
+      </div>
+    }
+
+    <div class="tm-list">
+      @for (team of teams(); track team._id) {
+        @if (editingId() === team._id) {
+          <div class="card tm-edit-card">
+            <input class="form-input tm-fs-13" [value]="editName()"
+              (input)="editName.set($any($event.target).value)" placeholder="Team name">
+            <input class="form-input tm-fs-12" [value]="editDesc()"
+              (input)="editDesc.set($any($event.target).value)" placeholder="Description (optional)">
+            <div class="tm-edit-actions">
+              <button type="button" class="btn-primary tm-btn-sm" (click)="saveEdit(team._id)">Save</button>
+              <button type="button" class="btn-ghost tm-fs-11" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </div>
+        } @else {
+          <div class="card tm-card-item"
+               [style.border-color]="activeTeam()?._id === team._id ? 'var(--indigo)' : ''"
+               [style.background]="activeTeam()?._id === team._id ? 'var(--indigo-soft)' : ''"
+               (click)="selectTeam(team)">
+            <div class="tm-card-row">
+              <div class="team-av">
+                {{ (team.name || '?').charAt(0).toUpperCase() }}
+              </div>
+              <div class="tm-card-main">
+                <div class="tm-card-title">{{ team.name }}</div>
+                <div class="tm-card-sub">{{ (team.members ?? []).length }} members</div>
+              </div>
+              <div class="tm-card-actions">
+                <button type="button" class="notif-delete-btn" (click)="$event.stopPropagation(); startEdit(team)" title="Edit">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/>
+                  </svg>
+                </button>
+                <button type="button" class="notif-delete-btn" (click)="$event.stopPropagation(); deleteTeam(team._id)" title="Delete">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Team detail panel -->
+  @if (activeTeam(); as team) {
+    <div class="tm-detail">
+      <div class="card tm-detail-card">
+        <div class="tm-detail-head">
+          <div>
+            <h2 class="tm-detail-title">{{ team.name }}</h2>
+            @if (team.description) {
+              <p class="tm-detail-desc">{{ team.description }}</p>
+            }
+          </div>
+        </div>
+
+        <!-- Members list -->
+        <div class="tm-members">
+          <div class="tm-members-title">
+            Members ({{ (team.members ?? []).length }})
+          </div>
+          @if ((team.members ?? []).length === 0) {
+            <p class="tm-members-empty">No members yet.</p>
+          }
+          <div class="tm-members-list">
+            @for (m of (team.members ?? []); track memberId(m)) {
+              <div class="tm-member-row">
+                <div class="av av-32 tm-member-av">{{ (memberName(m) || '?').charAt(0).toUpperCase() }}</div>
+                <div class="tm-member-main">
+                  <span class="tm-member-name">{{ memberName(m) }}</span>
+                  @if (isManager(team, memberId(m))) {
+                    <span class="manager-badge">Manager</span>
+                  }
+                </div>
+                <button type="button" class="btn-ghost tm-member-btn"
+                  (click)="toggleManager(team._id, memberId(m))">
+                  {{ isManager(team, memberId(m)) ? 'Demote' : 'Make Manager' }}
+                </button>
+                <button type="button" class="notif-delete-btn" (click)="removeMember(team._id, memberId(m))" title="Remove">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Add member -->
+        @if (nonMemberUsers().length > 0) {
+          <div class="tm-add-row">
+            <select class="form-input tm-add-select"
+              [value]="selectedUserId()" (change)="selectedUserId.set($any($event.target).value)">
+              <option value="">Select member to add…</option>
+              @for (m of nonMemberUsers(); track memberId(m)) {
+                <option [value]="memberId(m)">{{ memberName(m) }}</option>
+              }
+            </select>
+            <button type="button" class="btn-primary tm-add-btn"
+              [disabled]="!selectedUserId() || addingMember()"
+              (click)="addMember(team._id)">
+              {{ addingMember() ? 'Adding…' : 'Add Member' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  } @else if (!loading()) {
+    <div class="tm-empty-detail">
+      <div class="tm-empty-inner">
+        <div class="tm-empty-icon">👥</div>
+        <div class="tm-empty-text">Select a team to view details</div>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- Create team modal -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box tm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">New Team</h2>
+        <button type="button" class="modal-close" (click)="showCreate.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="tm-modal-body">
+        <div class="form-group">
+          <label class="form-label">Team name *</label>
+          <input class="form-input" type="text" placeholder="e.g. Frontend, Design…"
+            [value]="newName()" (input)="newName.set($any($event.target).value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" placeholder="Optional description"
+            [value]="newDesc()" (input)="newDesc.set($any($event.target).value)">
+        </div>
+        @if (createError()) { <div class="alert-error">{{ createError() }}</div> }
+        <div class="tm-modal-actions">
+          <button type="button" class="btn-ghost" (click)="showCreate.set(false)">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="creating()" (click)="createTeam()">
+            {{ creating() ? 'Creating…' : 'Create Team' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

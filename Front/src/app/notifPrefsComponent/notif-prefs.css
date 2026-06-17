@@ -1,0 +1,45 @@
+/* ══ Notification Preferences ═══════════════════════════════ */
+.np-section-title {
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+.np-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.np-row:last-child { border-bottom: none; }
+.np-label  { font-size: 13px; color: var(--text); }
+.np-sub    { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* Toggle */
+.toggle-btn {
+  width: 40px; height: 22px;
+  border-radius: 11px;
+  border: none;
+  background: var(--border);
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.toggle-btn.on { background: var(--indigo); }
+.toggle-btn::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+}
+.toggle-btn.on::after { transform: translateX(18px); }
+
+/* extracted inline styles */
+.np-skeleton-wrap { padding: .5rem 0; }
+.prefs-card  { max-width: 520px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.pref-divider { border: none; border-top: 1px solid var(--border); }
+.self-start  { align-self: flex-start; }

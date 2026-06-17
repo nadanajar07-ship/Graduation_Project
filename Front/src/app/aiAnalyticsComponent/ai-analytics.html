@@ -1,0 +1,290 @@
+<div class="page aia">
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        <span class="aia-spark">AI</span> Workforce Analytics
+      </h1>
+      <p class="aia-sub">
+        Productivity insights computed locally from work-session &amp; monitoring data
+      </p>
+    </div>
+    <div class="aia-head-actions">
+      @if (data()) {
+        <span class="aia-engine-tag">Local engine · No external AI</span>
+      }
+      <button class="aia-btn" (click)="refresh()" [disabled]="loading()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M16.023 9.348h4.992V4.356M3.985 19.644v-4.992h4.992m-4.99 0L9 9a8.967 8.967 0 0 1 14.5 2.5M3.5 12.5A8.967 8.967 0 0 0 18 19.5" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading ───────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="aia-state">
+      <div class="aia-spinner"></div>
+      <p>Crunching monitoring data…</p>
+    </div>
+  } @else if (error()) {
+    <div class="aia-state aia-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+      </svg>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (data(); as d) {
+
+    <!-- ── 3. AI Workforce Insights Cards ─────────────────── -->
+    <div class="aia-cards">
+      <!-- Top Performer -->
+      <div class="aia-card card-top">
+        <div class="aia-card-ic ic-emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+          </svg>
+        </div>
+        <div class="aia-card-body">
+          <span class="aia-card-label">Top Performer</span>
+          @if (d.insights.topPerformer; as tp) {
+            <span class="aia-card-value">{{ tp.name }}</span>
+            <span class="aia-card-meta">{{ tp.productivityScore }}% productive</span>
+          } @else {
+            <span class="aia-card-value muted">—</span>
+            <span class="aia-card-meta">No tracked data yet</span>
+          }
+        </div>
+      </div>
+
+      <!-- Needs Attention -->
+      <div class="aia-card card-attn">
+        <div class="aia-card-ic ic-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+          </svg>
+        </div>
+        <div class="aia-card-body">
+          <span class="aia-card-label">Needs Attention</span>
+          @if (d.insights.needsAttention; as na) {
+            <span class="aia-card-value">{{ na.name }}</span>
+            <span class="aia-card-meta">{{ na.productivityScore }}% productive</span>
+          } @else {
+            <span class="aia-card-value muted">—</span>
+            <span class="aia-card-meta">Not enough employees</span>
+          }
+        </div>
+      </div>
+
+      <!-- Average Team Productivity -->
+      <div class="aia-card card-avg">
+        <div class="aia-card-ic ic-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+          </svg>
+        </div>
+        <div class="aia-card-body">
+          <span class="aia-card-label">Avg Team Productivity</span>
+          <span class="aia-card-value">{{ d.insights.averageTeamProductivity }}%</span>
+          <span class="aia-card-meta">{{ d.team.trackedEmployeeCount }} of {{ d.team.employeeCount }} tracked</span>
+        </div>
+      </div>
+
+      <!-- Most Used Application -->
+      <div class="aia-card card-app">
+        <div class="aia-card-ic ic-violet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+          </svg>
+        </div>
+        <div class="aia-card-body">
+          <span class="aia-card-label">Most Used Application</span>
+          @if (d.insights.mostUsedApplication; as ma) {
+            <span class="aia-card-value">{{ ma.name }}</span>
+            <span class="aia-card-meta">{{ formatDuration(ma.seconds) }} total</span>
+          } @else {
+            <span class="aia-card-value muted">—</span>
+            <span class="aia-card-meta">No app telemetry yet</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── App-telemetry notice (honest empty-state) ───────── -->
+    @if (!hasTelemetry()) {
+      <div class="aia-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+        </svg>
+        <span>
+          Application-level breakdown (Productive / Distracting / Neutral split and Top Applications)
+          activates automatically once the desktop agent uploads app-usage telemetry. Until then,
+          productivity is derived from real <strong>active vs. idle</strong> work-session time.
+        </span>
+      </div>
+    }
+
+    <!-- ── 1 + 2. Team Overview pie + breakdown ────────────── -->
+    <div class="aia-grid">
+      <!-- Team productivity pie -->
+      <div class="aia-panel">
+        <div class="aia-panel-head">
+          <h2 class="aia-panel-title">Team Productivity Overview</h2>
+          <span class="aia-panel-sub">{{ formatDuration(d.team.totalTrackedSeconds) }} tracked</span>
+        </div>
+        <div class="aia-pie-wrap">
+          <svg class="aia-pie" viewBox="0 0 40 40">
+            <circle class="aia-pie-track" cx="20" cy="20" r="16" />
+            @for (s of teamPie(); track s.label) {
+              <circle
+                cx="20" cy="20" r="16"
+                fill="none"
+                [attr.stroke]="s.color"
+                stroke-width="8"
+                [attr.stroke-dasharray]="s.dash"
+                [attr.stroke-dashoffset]="s.offset"
+                transform="rotate(-90 20 20)" />
+            }
+          </svg>
+          <div class="aia-pie-center">
+            <span class="aia-pie-big">{{ d.team.breakdown.productivePct }}%</span>
+            <span class="aia-pie-small">Productive</span>
+          </div>
+        </div>
+        <div class="aia-legend">
+          <div class="aia-leg"><i style="background:#10b981"></i>Productive <b>{{ d.team.breakdown.productivePct }}%</b></div>
+          <div class="aia-leg"><i style="background:#8b5cf6"></i>Neutral <b>{{ d.team.breakdown.neutralPct }}%</b></div>
+          <div class="aia-leg"><i style="background:#ef4444"></i>Distracting <b>{{ d.team.breakdown.distractingPct }}%</b></div>
+          <div class="aia-leg"><i style="background:#f59e0b"></i>Idle <b>{{ d.team.breakdown.idlePct }}%</b></div>
+        </div>
+      </div>
+
+      <!-- Overall productivity comparison -->
+      <div class="aia-panel">
+        <div class="aia-panel-head">
+          <h2 class="aia-panel-title">Overall Productivity Comparison</h2>
+          <span class="aia-panel-sub">{{ trackedEmployees().length }} employees</span>
+        </div>
+        @if (trackedEmployees().length) {
+          <div class="aia-bars">
+            @for (e of trackedEmployees(); track e.userId) {
+              <div class="aia-bar-row">
+                <div class="aia-bar-name">
+                  <span class="aia-avatar">{{ getInitial(e.name) }}</span>
+                  <span class="aia-bar-label">{{ e.name }}</span>
+                </div>
+                <div class="aia-bar-track">
+                  <div class="aia-bar-fill" [class]="scoreClass(e.productivityScore)"
+                    [style.width.%]="e.productivityScore"></div>
+                </div>
+                <span class="aia-bar-val">{{ e.productivityScore }}%</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="aia-empty">No tracked work sessions in range.</div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Top Applications (org-wide) ─────────────────────── -->
+    <div class="aia-panel">
+      <div class="aia-panel-head">
+        <h2 class="aia-panel-title">Top Applications</h2>
+      </div>
+      @if (d.topApplications.length) {
+        <div class="aia-apps">
+          @for (a of d.topApplications; track a.name) {
+            <div class="aia-app-row">
+              <span class="aia-app-dot" [style.background]="catColors[a.category]"></span>
+              <span class="aia-app-name">{{ a.name }}</span>
+              <span class="aia-app-cat cat-{{ a.category }}">{{ a.category }}</span>
+              <span class="aia-app-time">{{ formatDuration(a.seconds) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="aia-empty">No application telemetry captured yet.</div>
+      }
+    </div>
+
+    <!-- ── 2. Per-employee pie charts (Productivity Analysis) ── -->
+    <div class="aia-panel">
+      <div class="aia-panel-head">
+        <h2 class="aia-panel-title">Employee Productivity Analysis</h2>
+        <span class="aia-panel-sub">Per-employee breakdown</span>
+      </div>
+      @if (trackedEmployees().length) {
+        <div class="aia-emp-grid">
+          @for (e of trackedEmployees(); track e.userId) {
+            <div class="aia-emp-card">
+              <div class="aia-emp-head">
+                <span class="aia-avatar lg">{{ getInitial(e.name) }}</span>
+                <div>
+                  <span class="aia-emp-name">{{ e.name }}</span>
+                  <span class="aia-emp-role">{{ e.role }}</span>
+                </div>
+                <span class="aia-emp-score" [class]="scoreClass(e.productivityScore)">
+                  {{ e.productivityScore }}%
+                </span>
+              </div>
+
+              <div class="aia-emp-pie-wrap">
+                <svg class="aia-emp-pie" viewBox="0 0 40 40">
+                  <circle class="aia-pie-track" cx="20" cy="20" r="16" />
+                  @for (s of buildPie(e.breakdown); track s.label) {
+                    <circle
+                      cx="20" cy="20" r="16" fill="none"
+                      [attr.stroke]="s.color" stroke-width="8"
+                      [attr.stroke-dasharray]="s.dash"
+                      [attr.stroke-dashoffset]="s.offset"
+                      transform="rotate(-90 20 20)" />
+                  }
+                </svg>
+                <div class="aia-emp-mini-legend">
+                  <span><i style="background:#10b981"></i>Prod {{ e.breakdown.productivePct }}%</span>
+                  <span><i style="background:#8b5cf6"></i>Neut {{ e.breakdown.neutralPct }}%</span>
+                  <span><i style="background:#ef4444"></i>Dist {{ e.breakdown.distractingPct }}%</span>
+                  <span><i style="background:#f59e0b"></i>Idle {{ e.breakdown.idlePct }}%</span>
+                </div>
+              </div>
+
+              <div class="aia-emp-stats">
+                <div><b>{{ formatDuration(e.activeSeconds) }}</b><span>Active</span></div>
+                <div><b>{{ formatDuration(e.idleSeconds) }}</b><span>Idle</span></div>
+                <div><b>{{ e.sessions }}</b><span>Sessions</span></div>
+                <div><b>{{ e.screenshots }}</b><span>Screenshots</span></div>
+              </div>
+
+              @if (e.topApplications.length) {
+                <div class="aia-emp-apps">
+                  <span class="aia-emp-apps-title">Top apps</span>
+                  @for (a of e.topApplications; track a.name) {
+                    <span class="aia-emp-app cat-{{ a.category }}">{{ a.name }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="aia-empty">No employees with tracked work sessions yet.</div>
+      }
+    </div>
+
+    <p class="aia-footer">
+      Generated {{ d.meta.generatedAt | date: 'medium' }} ·
+      {{ d.meta.dataPoints.sessions }} sessions ·
+      {{ d.meta.dataPoints.activityEvents }} activity events ·
+      computed locally — no OpenAI.
+    </p>
+  }
+</div>

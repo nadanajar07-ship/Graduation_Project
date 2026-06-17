@@ -1,0 +1,112 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Webhook Deliveries</h1>
+      <p class="page-sub">Per-event delivery attempts for your organization's webhooks</p>
+    </div>
+    <a class="btn-ghost btn-ghost-small" routerLink="/dashboard/webhooks">Manage webhooks ›</a>
+  </div>
+
+  <!-- Status tabs with counts -->
+  <div class="wd-tabs">
+    @for (t of statusTabs; track t.key) {
+      <button type="button" class="wd-tab" [class.wd-tab-active]="activeStatus() === t.key"
+              (click)="setStatus(t.key)">
+        {{ t.label }}
+        <span class="wd-tab-count">{{ countFor()(t.key) }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Webhook filter -->
+  @if (subscriptions().length > 0) {
+    <div class="wd-filterbar">
+      <label class="wd-flabel">Webhook</label>
+      <select class="input wd-select" [ngModel]="activeSub()" (ngModelChange)="setSub($event)">
+        <option value="">All webhooks</option>
+        @for (s of subscriptions(); track s._id) {
+          <option [value]="s._id">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="wd-list">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton skeleton-row skel-row-70"></div>
+      }
+    </div>
+  } @else if (deliveries().length === 0 && !error()) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">📡</div>
+      <div class="empty-state-title">No deliveries yet</div>
+      <div class="empty-state-sub">
+        When org events fire, each outbound webhook attempt — successes and failures — is logged here.
+      </div>
+    </div>
+  } @else if (!error()) {
+    <div class="wd-list">
+      @for (d of deliveries(); track d._id) {
+        <div class="wd-card">
+          <div class="wd-row" (click)="toggleExpand(d._id)">
+            <span class="wd-status" [class]="statusClass(d)">{{ d.status }}</span>
+
+            <div class="wd-info">
+              <div class="wd-top">
+                <span class="wd-event">{{ d.event }}</span>
+                <span class="wd-arrow">→</span>
+                <span class="wd-sub">{{ subName(d) }}</span>
+              </div>
+              <div class="wd-meta">
+                <span>{{ when(d.createdAt) }}</span>
+                <span class="wd-dot">·</span>
+                <span>{{ d.attempts }} attempt{{ d.attempts === 1 ? '' : 's' }}</span>
+                @if (d.lastStatusCode) {
+                  <span class="wd-dot">·</span>
+                  <span class="wd-code" [class.wd-code-ok]="d.lastStatusCode < 400"
+                        [class.wd-code-err]="d.lastStatusCode >= 400">HTTP {{ d.lastStatusCode }}</span>
+                }
+              </div>
+            </div>
+
+            <button type="button" class="wd-expand" [class.wd-expand-open]="expandedId() === d._id">▾</button>
+          </div>
+
+          @if (expandedId() === d._id) {
+            <div class="wd-details">
+              @if (subUrl(d)) {
+                <div class="wd-detail-line"><span class="wd-detail-k">Target URL</span><span class="wd-detail-v wd-mono">{{ subUrl(d) }}</span></div>
+              }
+              @if (d.lastError) {
+                <div class="wd-detail-line"><span class="wd-detail-k">Last error</span><span class="wd-detail-v wd-err">{{ d.lastError }}</span></div>
+              }
+              @if (d.deliveredAt) {
+                <div class="wd-detail-line"><span class="wd-detail-k">Delivered at</span><span class="wd-detail-v">{{ when(d.deliveredAt) }}</span></div>
+              }
+              @if (d.nextAttemptAt && d.status !== 'delivered' && d.status !== 'dead') {
+                <div class="wd-detail-line"><span class="wd-detail-k">Next retry</span><span class="wd-detail-v">{{ when(d.nextAttemptAt) }}</span></div>
+              }
+              <div class="wd-detail-line wd-detail-block">
+                <span class="wd-detail-k">Payload</span>
+                <pre class="wd-payload">{{ payloadJson(d) }}</pre>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (pages() > 1) {
+      <div class="wd-pager">
+        <button type="button" class="btn-ghost btn-ghost-small" [disabled]="page() === 1" (click)="prevPage()">‹ Prev</button>
+        <span class="wd-page-info">Page {{ page() }} of {{ pages() }}</span>
+        <button type="button" class="btn-ghost btn-ghost-small" [disabled]="page() === pages()" (click)="nextPage()">Next ›</button>
+      </div>
+    }
+  }
+</div>

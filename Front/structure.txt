@@ -1,0 +1,269 @@
+.
+├── .angular
+│   └── cache
+│       └── 21.1.4
+│           └── remote-employee-monitoring
+├── .claude
+│   ├── .DS_Store
+│   ├── launch.json
+│   └── settings.local.json
+├── .DS_Store
+├── .editorconfig
+├── .gitignore
+├── .hintrc
+├── .postcssrc.json
+├── .vscode
+│   ├── extensions.json
+│   ├── launch.json
+│   ├── mcp.json
+│   └── tasks.json
+├── angular.json
+├── endpoints.txt
+├── http-services.txt
+├── package-lock.json
+├── package.json
+├── proxy.conf.js
+├── public
+│   └── favicon.ico
+├── README.md
+├── routes.txt
+├── src
+│   ├── .DS_Store
+│   ├── app
+│   │   ├── acceptInviteComponent
+│   │   │   └── accept-invite.ts
+│   │   ├── accountComponent
+│   │   │   ├── account.html
+│   │   │   └── account.ts
+│   │   ├── app.config.ts
+│   │   ├── app.css
+│   │   ├── app.html
+│   │   ├── app.routes.ts
+│   │   ├── app.spec.ts
+│   │   ├── app.ts
+│   │   ├── auth.guard.ts
+│   │   ├── calendarComponent
+│   │   │   ├── calendar.css
+│   │   │   ├── calendar.html
+│   │   │   └── calendar.ts
+│   │   ├── check-email-component
+│   │   │   ├── check-email-component.css
+│   │   │   ├── check-email-component.html
+│   │   │   ├── check-email-component.spec.ts
+│   │   │   └── check-email-component.ts
+│   │   ├── createSpaceComponent
+│   │   │   ├── create-space.component.css
+│   │   │   ├── create-space.component.html
+│   │   │   └── create-space.component.ts
+│   │   ├── createSprintComponent
+│   │   │   ├── create-sprint.html
+│   │   │   ├── create-sprint.spec.ts
+│   │   │   └── create-sprint.ts
+│   │   ├── createTaskComponent
+│   │   │   ├── create-task.css
+│   │   │   ├── create-task.html
+│   │   │   └── create-task.ts
+│   │   ├── dark-theme.css
+│   │   ├── dashboardHomeComponent
+│   │   │   ├── dashboard-home.component.ts
+│   │   │   ├── dashboard-home.css
+│   │   │   ├── dashboard-home.html
+│   │   │   └── dashboard-home.spec.ts
+│   │   ├── dashboardLayoutComponent
+│   │   │   ├── dashboard-layout.css
+│   │   │   ├── dashboard-layout.html
+│   │   │   └── dashboard-layout.ts
+│   │   ├── design-system.css
+│   │   ├── employee-detailComponent
+│   │   │   ├── employee-detail.css
+│   │   │   ├── employee-detail.html
+│   │   │   ├── employee-detail.spec.ts
+│   │   │   └── employee-detail.ts
+│   │   ├── employee-listComponent
+│   │   │   ├── employee-list.css
+│   │   │   ├── employee-list.html
+│   │   │   ├── employee-list.spec.ts
+│   │   │   └── employee-list.ts
+│   │   ├── faqComponent
+│   │   │   ├── faq.html
+│   │   │   ├── faq.spec.ts
+│   │   │   └── faq.ts
+│   │   ├── forgot-passwordComponent
+│   │   │   ├── forgot-password.css
+│   │   │   ├── forgot-password.html
+│   │   │   ├── forgot-password.spec.ts
+│   │   │   └── forgot-password.ts
+│   │   ├── inviteUserComponent
+│   │   │   ├── invite-user.html
+│   │   │   └── invite-user.ts
+│   │   ├── landingComponent
+│   │   │   ├── landing.component.css
+│   │   │   ├── landing.component.html
+│   │   │   └── landing.component.ts
+│   │   ├── loginComponent
+│   │   │   ├── login.css
+│   │   │   ├── login.html
+│   │   │   ├── login.spec.ts
+│   │   │   └── login.ts
+│   │   ├── meetingsComponent
+│   │   │   ├── meetings.css
+│   │   │   ├── meetings.html
+│   │   │   └── meetings.ts
+│   │   ├── mentionsComponent
+│   │   │   ├── mentions.css
+│   │   │   ├── mentions.html
+│   │   │   └── mentions.ts
+│   │   ├── messagesComponent
+│   │   │   ├── messages.css
+│   │   │   ├── messages.html
+│   │   │   ├── messages.spec.ts
+│   │   │   └── messages.ts
+│   │   ├── navbarComponent
+│   │   │   ├── navbar.css
+│   │   │   ├── navbar.html
+│   │   │   ├── navbar.spec.ts
+│   │   │   └── navbar.ts
+│   │   ├── notFoundComponent
+│   │   │   └── not-found.ts
+│   │   ├── notificationsComponent
+│   │   │   ├── notifications.html
+│   │   │   ├── notifications.spec.ts
+│   │   │   └── notifications.ts
+│   │   ├── notifPrefsComponent
+│   │   │   ├── notif-prefs.css
+│   │   │   ├── notif-prefs.html
+│   │   │   └── notif-prefs.ts
+│   │   ├── onboarding.guard.ts
+│   │   ├── onboardingComponent
+│   │   │   ├── onboarding.component.css
+│   │   │   ├── onboarding.component.html
+│   │   │   └── onboarding.component.ts
+│   │   ├── orgSettingsComponent
+│   │   │   ├── org-settings.css
+│   │   │   ├── org-settings.html
+│   │   │   └── org-settings.ts
+│   │   ├── profileComponent
+│   │   │   ├── profile.css
+│   │   │   ├── profile.html
+│   │   │   ├── profile.spec.ts
+│   │   │   └── profile.ts
+│   │   ├── projectsComponent
+│   │   │   ├── projects.css
+│   │   │   ├── projects.html
+│   │   │   └── projects.ts
+│   │   ├── recentComponent
+│   │   │   ├── recent.css
+│   │   │   ├── recent.html
+│   │   │   ├── recent.spec.ts
+│   │   │   └── recent.ts
+│   │   ├── remindersComponent
+│   │   │   ├── reminders.css
+│   │   │   ├── reminders.html
+│   │   │   └── reminders.ts
+│   │   ├── report-detailComponent
+│   │   │   ├── report-detail.html
+│   │   │   ├── report-detail.spec.ts
+│   │   │   └── report-detail.ts
+│   │   ├── reportsComponent
+│   │   │   ├── reports.css
+│   │   │   ├── reports.html
+│   │   │   ├── reports.spec.ts
+│   │   │   └── reports.ts
+│   │   ├── savedMessagesComponent
+│   │   │   ├── saved-messages.css
+│   │   │   ├── saved-messages.html
+│   │   │   └── saved-messages.ts
+│   │   ├── securityComponent
+│   │   │   ├── security.css
+│   │   │   ├── security.html
+│   │   │   └── security.ts
+│   │   ├── services
+│   │   │   ├── auth.interceptor.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── call.service.ts
+│   │   │   ├── chat.service.ts
+│   │   │   ├── dashboard.service.ts
+│   │   │   ├── invite.service.ts
+│   │   │   ├── notification.service.ts
+│   │   │   ├── push-notification.service.ts
+│   │   │   ├── reports.service.ts
+│   │   │   ├── role.service.ts
+│   │   │   ├── screenshot.service.ts
+│   │   │   ├── socket.service.ts
+│   │   │   ├── space.service.ts
+│   │   │   ├── task.service.ts
+│   │   │   ├── theme.service.ts
+│   │   │   ├── toast.service.ts
+│   │   │   └── work-session.service.ts
+│   │   ├── settingsComponent
+│   │   │   ├── settings.css
+│   │   │   ├── settings.html
+│   │   │   ├── settings.spec.ts
+│   │   │   └── settings.ts
+│   │   ├── sharedComponents
+│   │   │   ├── shared.html
+│   │   │   ├── shared.spec.ts
+│   │   │   └── shared.ts
+│   │   ├── sidebarComponent
+│   │   │   ├── sidebar.css
+│   │   │   ├── sidebar.html
+│   │   │   ├── sidebar.spec.ts
+│   │   │   └── sidebar.ts
+│   │   ├── sign-upComponent
+│   │   │   ├── sign-up.css
+│   │   │   ├── sign-up.html
+│   │   │   ├── sign-up.spec.ts
+│   │   │   └── sign-up.ts
+│   │   ├── spaceDetailComponent
+│   │   │   ├── space-detail.css
+│   │   │   ├── space-detail.html
+│   │   │   └── space-detail.ts
+│   │   ├── spacesListComponent
+│   │   │   ├── spaces-list.css
+│   │   │   ├── spaces-list.html
+│   │   │   └── spaces-list.ts
+│   │   ├── starredComponent
+│   │   │   ├── starred.css
+│   │   │   ├── starred.html
+│   │   │   ├── starred.spec.ts
+│   │   │   └── starred.ts
+│   │   ├── task-detailComponent
+│   │   │   ├── task-detail.html
+│   │   │   ├── task-detail.spec.ts
+│   │   │   └── task-detail.ts
+│   │   ├── task-listComponent
+│   │   │   ├── task-list.css
+│   │   │   ├── task-list.html
+│   │   │   ├── task-list.spec.ts
+│   │   │   └── task-list.ts
+│   │   ├── teamsComponent
+│   │   │   ├── teams.css
+│   │   │   ├── teams.html
+│   │   │   └── teams.ts
+│   │   ├── toastComponent
+│   │   │   ├── toast.html
+│   │   │   ├── toast.spec.ts
+│   │   │   └── toast.ts
+│   │   ├── utils
+│   │   │   ├── performance.css
+│   │   │   ├── performance.html
+│   │   │   ├── performance.spec.ts
+│   │   │   ├── performance.ts
+│   │   │   └── performance.utils.ts
+│   │   ├── webhooksComponent
+│   │   │   ├── webhooks.css
+│   │   │   ├── webhooks.html
+│   │   │   └── webhooks.ts
+│   │   └── workSessionWidgetComponent
+│   │       ├── work-session-widget.css
+│   │       ├── work-session-widget.html
+│   │       └── work-session-widget.ts
+│   ├── index.html
+│   ├── main.ts
+│   └── styles.css
+├── structure.txt
+├── tsconfig.app.json
+├── tsconfig.json
+└── tsconfig.spec.json
+
+58 directories, 209 files

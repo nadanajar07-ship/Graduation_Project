@@ -1,0 +1,385 @@
+.
+├── .DS_Store
+├── backend-structure.txt
+└── REM
+    ├── _getuser.mjs
+    ├── _mk_meeting_test.mjs
+    ├── .dockerignore
+    ├── .github
+    │   └── workflows
+    │       └── ci.yml
+    ├── .gitignore
+    ├── .vscode
+    │   ├── c_cpp_properties.json
+    │   ├── launch.json
+    │   └── settings.json
+    ├── ai-services
+    │   ├── analytics_ai_service.py
+    │   ├── analytics.ai.service.js
+    │   ├── me_ai_service.py
+    │   └── me.ai.service.js
+    ├── docker-compose.yml
+    ├── Dockerfile
+    ├── docs
+    │   ├── ACCESS-MODEL.md
+    │   ├── grafana
+    │   │   ├── alerts
+    │   │   │   └── rem-alerts.yaml
+    │   │   └── dashboards
+    │   │       └── rem-overview.json
+    │   ├── JIRA-SLACK-INTEGRATION-CHECK.md
+    │   ├── NAMING-CONVENTION.md
+    │   ├── PRE-PUSH-CLEANUP.md
+    │   ├── SECRETS-ROTATION.md
+    │   └── SECURITY.md
+    ├── index.js
+    ├── package-lock.json
+    ├── package.json
+    ├── scripts
+    │   ├── generate-secrets.js
+    │   └── migrate.js
+    ├── src
+    │   ├── App.controller.js
+    │   ├── config
+    │   │   ├── .env.dev
+    │   │   ├── .env.example
+    │   │   ├── env.js
+    │   │   └── index.js
+    │   ├── DB
+    │   │   ├── connection.js
+    │   │   ├── db.service.js
+    │   │   └── Model
+    │   │       ├── activityEvent.model.js
+    │   │       ├── analytic.model.js
+    │   │       ├── auditLog.model.js
+    │   │       ├── call.model.js
+    │   │       ├── channelTab.model.js
+    │   │       ├── chatroom.model.js
+    │   │       ├── comment.model.js
+    │   │       ├── constants
+    │   │       │   └── entityTypes.js
+    │   │       ├── deviceToken.model.js
+    │   │       ├── file.model.js
+    │   │       ├── invitation.model.js
+    │   │       ├── meeting.model.js
+    │   │       ├── member.model.js
+    │   │       ├── message.model.js
+    │   │       ├── notification.model.js
+    │   │       ├── notificationPreference.model.js
+    │   │       ├── organization.model.js
+    │   │       ├── project.model.js
+    │   │       ├── reaction.model.js
+    │   │       ├── recentActivity.model.js
+    │   │       ├── refreshToken.model.js
+    │   │       ├── reminder.model.js
+    │   │       ├── savedMessage.model.js
+    │   │       ├── scheduledMessage.model.js
+    │   │       ├── schemaMigration.model.js
+    │   │       ├── screenshot.model.js
+    │   │       ├── space.model.js
+    │   │       ├── spaceView.model.js
+    │   │       ├── sprint.model.js
+    │   │       ├── starredItem.model.js
+    │   │       ├── task.model.js
+    │   │       ├── taskWorkflow.model.js
+    │   │       ├── team.model.js
+    │   │       ├── user.model.js
+    │   │       ├── webhookDelivery.model.js
+    │   │       ├── webhookSubscription.model.js
+    │   │       └── worksession.model.js
+    │   ├── middleware
+    │   │   ├── activity.middleware.js
+    │   │   ├── auth.middleware.js
+    │   │   ├── socket
+    │   │   │   ├── auth.middleware.js
+    │   │   │   └── validation.middleware.js
+    │   │   └── validation.middleware.js
+    │   ├── migrations
+    │   │   ├── add-org-to-teams.js
+    │   │   └── cleanup-removed-fields.js
+    │   ├── modules
+    │   │   ├── activity
+    │   │   │   ├── activity.controller.js
+    │   │   │   ├── activity.validation.js
+    │   │   │   └── service
+    │   │   │       └── activity.service.js
+    │   │   ├── auth
+    │   │   │   ├── auth.controller.js
+    │   │   │   ├── auth.validation.js
+    │   │   │   └── service
+    │   │   │       ├── login.service.js
+    │   │   │       ├── logout.service.js
+    │   │   │       ├── organization.service.js
+    │   │   │       ├── refresh.service.js
+    │   │   │       └── registration.service.js
+    │   │   ├── calendar
+    │   │   │   └── calendar.service.js
+    │   │   ├── call
+    │   │   │   ├── call.controller.js
+    │   │   │   ├── call.validation.js
+    │   │   │   └── service
+    │   │   │       ├── call.service.js
+    │   │   │       └── livekit.service.js
+    │   │   ├── chatroom
+    │   │   │   ├── channel-tab.controller.js
+    │   │   │   ├── chat.room.controller.js
+    │   │   │   ├── chat.room.validation.js
+    │   │   │   └── service
+    │   │   │       ├── chat.service.js
+    │   │   │       └── chat.sync.service.js
+    │   │   ├── comment
+    │   │   │   ├── comment.controller.js
+    │   │   │   ├── comment.validation.js
+    │   │   │   └── service
+    │   │   │       └── comment.service.js
+    │   │   ├── dashboard
+    │   │   │   └── dashboard.controller.js
+    │   │   ├── device
+    │   │   │   └── device.controller.js
+    │   │   ├── invite
+    │   │   │   ├── invite.controller.js
+    │   │   │   ├── invite.validation.js
+    │   │   │   └── service
+    │   │   │       └── invite.service.js
+    │   │   ├── me
+    │   │   │   ├── me.controller.js
+    │   │   │   ├── me.validation.js
+    │   │   │   └── service
+    │   │   │       └── me.service.js
+    │   │   ├── meeting
+    │   │   │   └── meeting.controller.js
+    │   │   ├── message
+    │   │   │   ├── message.controller.js
+    │   │   │   ├── message.validation.js
+    │   │   │   ├── service
+    │   │   │   │   ├── message.extras.service.js
+    │   │   │   │   ├── message.service.js
+    │   │   │   │   └── shared.message.service.js
+    │   │   │   └── slash
+    │   │   │       └── built-ins.js
+    │   │   ├── metrics
+    │   │   │   ├── metrics.controller.js
+    │   │   │   └── service
+    │   │   │       └── metrics.service.js
+    │   │   ├── notification
+    │   │   │   ├── notification.controller.js
+    │   │   │   ├── notification.validation.js
+    │   │   │   └── service
+    │   │   │       ├── notification.service.js
+    │   │   │       └── preferences.service.js
+    │   │   ├── organization
+    │   │   │   ├── organization.controller.js
+    │   │   │   ├── organization.validation.js
+    │   │   │   └── service
+    │   │   │       ├── invitation.service.js
+    │   │   │       ├── member.service.js
+    │   │   │       └── organization.service.js
+    │   │   ├── project
+    │   │   │   ├── project.controller.js
+    │   │   │   ├── project.validation.js
+    │   │   │   └── service
+    │   │   │       └── project.service.js
+    │   │   ├── reaction
+    │   │   │   ├── reaction.controller.js
+    │   │   │   ├── reaction.validation.js
+    │   │   │   └── service
+    │   │   │       └── reaction.service.js
+    │   │   ├── reminder
+    │   │   │   └── reminder.controller.js
+    │   │   ├── report
+    │   │   │   ├── report.controller.js
+    │   │   │   └── service
+    │   │   │       └── report.service.js
+    │   │   ├── socket
+    │   │   │   ├── service
+    │   │   │   │   ├── auth.service.js
+    │   │   │   │   ├── call.socket.js
+    │   │   │   │   └── chat.socket.js
+    │   │   │   ├── socket.controller.js
+    │   │   │   └── util
+    │   │   │       └── socket-room.util.js
+    │   │   ├── space
+    │   │   │   ├── service
+    │   │   │   │   └── space.service.js
+    │   │   │   ├── space.controller.js
+    │   │   │   └── space.validation.js
+    │   │   ├── sprint
+    │   │   │   ├── service
+    │   │   │   │   └── sprint.service.js
+    │   │   │   ├── sprint.controller.js
+    │   │   │   ├── sprint.status.controller.js
+    │   │   │   └── sprint.validation.js
+    │   │   ├── star
+    │   │   │   ├── service
+    │   │   │   │   └── star.service.js
+    │   │   │   └── star.controller.js
+    │   │   ├── task
+    │   │   │   ├── service
+    │   │   │   │   ├── task.dates.service.js
+    │   │   │   │   ├── task.dependencies.service.js
+    │   │   │   │   ├── task.query.service.js
+    │   │   │   │   ├── task.service.js
+    │   │   │   │   └── task.workflow.service.js
+    │   │   │   ├── task.controller.js
+    │   │   │   └── task.validation.js
+    │   │   ├── team
+    │   │   │   ├── service
+    │   │   │   │   └── team.service.js
+    │   │   │   ├── team.controller.js
+    │   │   │   └── team.validation.js
+    │   │   ├── user
+    │   │   │   ├── service
+    │   │   │   │   └── user.service.js
+    │   │   │   ├── user.controller.js
+    │   │   │   └── user.validation.js
+    │   │   ├── webhook
+    │   │   │   └── webhook.controller.js
+    │   │   └── workSession
+    │   │       ├── activity-event.controller.js
+    │   │       ├── screenshot.controller.js
+    │   │       ├── service
+    │   │       │   └── workSession.service.js
+    │   │       ├── workSession.controller.js
+    │   │       └── workSession.validation.js
+    │   ├── uploads
+    │   │   ├── organization
+    │   │   │   └── profile
+    │   │   │       ├── 1772625497746-7146432891741324200381-404990562download (1).jpg
+    │   │   │       ├── 1772625540210-662203454Screenshot 2025-04-29 224958.png
+    │   │   │       ├── 1772625573361-68675772Screenshot 2025-04-29 224958.png
+    │   │   │       ├── 1772625627140-418402690Screenshot 2025-04-29 224958.png
+    │   │   │       └── 1772625795994-969527091Screenshot 2025-04-29 224958.png
+    │   │   └── user
+    │   │       └── profile
+    │   │           ├── 1741324200381-404990562download (1).jpg
+    │   │           ├── 1741324200382-554988217download (2).jpg
+    │   │           ├── 1741324200382-750961442download.jpg
+    │   │           └── 1741324305428-870832391download.jpg
+    │   └── utils
+    │       ├── activity
+    │       │   └── activity.logger.js
+    │       ├── audit
+    │       │   ├── audit.actions.js
+    │       │   └── audit.logger.js
+    │       ├── cache
+    │       │   ├── cache.service.js
+    │       │   ├── lru.cache.js
+    │       │   └── session.store.js
+    │       ├── db
+    │       │   └── pagination.js
+    │       ├── email
+    │       │   ├── invitation.email.js
+    │       │   ├── notification.email.js
+    │       │   ├── send.email.js
+    │       │   └── template
+    │       │       ├── organizationInvitation.template.js
+    │       │       └── verifyAccount.template.js
+    │       ├── errors
+    │       │   ├── AppError.js
+    │       │   ├── BadRequestError.js
+    │       │   ├── ConflictError.js
+    │       │   ├── ForbiddenError.js
+    │       │   ├── index.js
+    │       │   ├── NotFoundError.js
+    │       │   ├── TooManyRequestsError.js
+    │       │   └── UnauthorizedError.js
+    │       ├── events
+    │       │   ├── email.event.js
+    │       │   └── notification.event.js
+    │       ├── health
+    │       │   └── health.service.js
+    │       ├── jobs
+    │       │   ├── Idle.detection.job.js
+    │       │   ├── meeting-reminders.job.js
+    │       │   ├── otp.cleaner.job.js
+    │       │   ├── reminders.job.js
+    │       │   ├── scheduled-messages.job.js
+    │       │   └── webhook-delivery.job.js
+    │       ├── logger
+    │       │   ├── logger.js
+    │       │   └── request.logger.js
+    │       ├── multer
+    │       │   ├── cloud.multer.js
+    │       │   ├── cloudinary.multer.js
+    │       │   └── local.multer.js
+    │       ├── observability
+    │       │   ├── metrics.js
+    │       │   └── sentry.js
+    │       ├── openapi
+    │       │   └── spec.js
+    │       ├── permissions
+    │       │   ├── org.permissions.js
+    │       │   └── task.permissions.js
+    │       ├── presence
+    │       │   └── presence.service.js
+    │       ├── push
+    │       │   └── push.service.js
+    │       ├── rate-limit
+    │       │   └── limiters.js
+    │       ├── redis
+    │       │   └── client.js
+    │       ├── response
+    │       │   ├── error.response.js
+    │       │   └── success.response.js
+    │       ├── secrets
+    │       │   └── secrets.manager.js
+    │       ├── security
+    │       │   ├── geo-location.service.js
+    │       │   ├── geo-risk.service.js
+    │       │   ├── hash.security.js
+    │       │   └── token.security.js
+    │       ├── shutdown
+    │       │   └── graceful.js
+    │       ├── slash
+    │       │   └── slash.registry.js
+    │       ├── unfurl
+    │       │   └── unfurl.service.js
+    │       └── webhooks
+    │           └── webhook.service.js
+    ├── tests
+    │   ├── fix-missing-httperror-imports.js
+    │   ├── frontend
+    │   │   ├── index.html
+    │   │   └── README.md
+    │   ├── integration
+    │   │   ├── auth.integration.test.js
+    │   │   ├── chat.integration.test.js
+    │   │   ├── livekit.integration.test.js
+    │   │   ├── setup.js
+    │   │   └── tasks.integration.test.js
+    │   ├── migrate-throws.js
+    │   ├── postman
+    │   │   ├── generate-full-collection.js
+    │   │   ├── README.md
+    │   │   ├── REM-Chat-Calls.postman_collection.json
+    │   │   ├── REM-Full.postman_collection.json
+    │   │   ├── REM-Full.postman_environment.json
+    │   │   ├── REM-LiveKit.postman_collection.json
+    │   │   ├── REM-Local.postman_environment.json
+    │   │   └── seed-test-call.js
+    │   ├── qa-frontend
+    │   │   ├── api
+    │   │   │   ├── client.js
+    │   │   │   └── socket-client.js
+    │   │   ├── app.js
+    │   │   ├── components
+    │   │   │   └── ui.js
+    │   │   ├── docs
+    │   │   │   └── README.md
+    │   │   ├── index.html
+    │   │   └── pages
+    │   │       ├── auth.js
+    │   │       ├── calls.js
+    │   │       ├── messages.js
+    │   │       ├── monitoring.js
+    │   │       ├── rooms.js
+    │   │       └── socket.js
+    │   ├── scan-dup-indexes.js
+    │   └── unit
+    │       ├── httpError.test.js
+    │       └── task.permissions.test.js
+    └── tools
+        ├── desktop-agent.js
+        └── README.md
+
+115 directories, 268 files

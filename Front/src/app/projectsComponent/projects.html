@@ -1,0 +1,279 @@
+<div class="page prj-layout">
+
+  <!-- ── Left: Projects list ── -->
+  <div class="prj-sidebar">
+
+    <div class="page-header prj-header">
+      <div>
+        <h1 class="page-title">Projects</h1>
+        <p class="page-sub">Manage organisation projects</p>
+      </div>
+      @if (canCreateProject()) {
+        <button type="button" class="btn-primary" (click)="showCreate.set(true)">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+        </button>
+      }
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="prj-tabs">
+      @for (tab of ['All', 'Active', 'Completed', 'Archived']; track tab) {
+        <button type="button" class="prj-filter-btn"
+          [class.active]="filterTab() === tab"
+          (click)="filterTab.set($any(tab))">
+          {{ tab }}
+        </button>
+      }
+    </div>
+
+    @if (error()) {
+      <div class="alert-error prj-alert">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+      <div class="prj-skeletons">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton skeleton-row prj-skeleton-row"></div>
+        }
+      </div>
+    }
+
+    @if (!loading() && filtered().length === 0) {
+      <div class="empty-state-full">
+        <div class="empty-state-icon">📁</div>
+        <div class="empty-state-title">No projects</div>
+        <div class="empty-state-sub">Create your first project.</div>
+      </div>
+    }
+
+    <div class="prj-list">
+      @for (project of filtered(); track project._id) {
+
+        @if (editingId() === project._id) {
+          <!-- Inline edit form -->
+          <div class="card prj-edit-card">
+            <input class="form-input prj-fs-13" [value]="editTitle()"
+              (input)="editTitle.set($any($event.target).value)" placeholder="Project title">
+            <input class="form-input prj-fs-12" [value]="editDesc()"
+              (input)="editDesc.set($any($event.target).value)" placeholder="Description (optional)">
+            <select class="form-input prj-fs-12"
+              [value]="editStatus()" (change)="editStatus.set($any($event.target).value)">
+              @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+            </select>
+            <div class="prj-edit-dates">
+              <input class="form-input prj-fs-11 prj-flex-1" type="date" [value]="editStart()"
+                (change)="editStart.set($any($event.target).value)">
+              <input class="form-input prj-fs-11 prj-flex-1" type="date" [value]="editEnd()"
+                (change)="editEnd.set($any($event.target).value)">
+            </div>
+            <div class="prj-edit-actions">
+              <button type="button" class="btn-primary prj-btn-sm"
+                [disabled]="savingEdit()" (click)="saveEdit(project._id)">
+                {{ savingEdit() ? 'Saving…' : 'Save' }}
+              </button>
+              <button type="button" class="btn-ghost prj-fs-11" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </div>
+
+        } @else {
+          <div class="card prj-card-item"
+               [class.active]="activeProject()?._id === project._id"
+               (click)="selectProject(project)">
+            <div class="prj-card-row">
+              <div class="av av-32 prj-av">
+                {{ project.title?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div class="prj-card-main">
+                <div class="prj-card-title">{{ project.title }}</div>
+                <div class="prj-card-status">
+                  <span class="prj-card-dot" [style.background]="statusColor(project.status)"></span>
+                  <span class="prj-card-status-text">{{ project.status }}</span>
+                </div>
+              </div>
+              <div class="prj-card-actions">
+                <button type="button" class="notif-delete-btn" title="Edit"
+                  (click)="$event.stopPropagation(); startEdit(project)">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Z"/>
+                  </svg>
+                </button>
+                <button type="button" class="notif-delete-btn" title="Delete"
+                  (click)="$event.stopPropagation(); deleteProject(project._id)">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+      }
+    </div>
+  </div>
+
+  <!-- ── Right: Project detail ── -->
+  @if (activeProject(); as project) {
+    <div class="prj-detail">
+      <div class="card prj-detail-card">
+
+        <!-- Header -->
+        <div class="prj-detail-head">
+          <div>
+            <h2 class="prj-detail-title">{{ project.title }}</h2>
+            @if (project.description) {
+              <p class="prj-detail-desc">{{ project.description }}</p>
+            }
+            <div class="prj-detail-meta">
+              <span class="prj-detail-badge"
+                [style.color]="statusColor(project.status)"
+                [style.border-color]="statusColor(project.status)">
+                {{ project.status }}
+              </span>
+              @if (project.teamId) {
+                <span class="prj-meta-text">
+                  Team: {{ teamName(project.teamId) }}
+                </span>
+              }
+              @if (project.startDate) {
+                <span class="prj-meta-text">
+                  {{ project.startDate | date:'MMM d, y' }} → {{ (project.endDate | date:'MMM d, y') || '…' }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Status quick-change -->
+          <select class="form-input prj-status-select"
+            [value]="project.status"
+            (change)="updateStatus(project._id, $any($event.target).value)">
+            @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+          </select>
+        </div>
+
+        <!-- Members -->
+        <div class="prj-members">
+          <div class="prj-members-title">
+            Members ({{ (project.members ?? []).length }})
+          </div>
+          @if ((project.members ?? []).length === 0) {
+            <p class="prj-members-empty">No members yet.</p>
+          }
+          <div class="prj-members-list">
+            @for (m of (project.members ?? []); track memberId(m)) {
+              <div class="prj-member-row">
+                <div class="av av-32 prj-member-av">{{ memberName(m).charAt(0).toUpperCase() }}</div>
+                <span class="prj-member-name">{{ memberName(m) }}</span>
+                <button type="button" class="notif-delete-btn" title="Remove"
+                  (click)="removeMember(project._id, memberId(m))">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (nonMemberUsers().length > 0) {
+            <div class="prj-add-row">
+              <select class="form-input prj-add-select"
+                [value]="selectedMemberId()"
+                (change)="selectedMemberId.set($any($event.target).value)">
+                <option value="">Select member to add…</option>
+                @for (m of nonMemberUsers(); track memberId(m)) {
+                  <option [value]="memberId(m)">{{ memberName(m) }}</option>
+                }
+              </select>
+              <button type="button" class="btn-primary prj-add-btn"
+                [disabled]="!selectedMemberId() || addingMember()"
+                (click)="addMember(project._id)">
+                {{ addingMember() ? 'Adding…' : 'Add Member' }}
+              </button>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+
+  } @else if (!loading()) {
+    <div class="prj-empty-detail">
+      <div class="prj-empty-inner">
+        <div class="prj-empty-icon">📁</div>
+        <div class="prj-empty-text">Select a project to view details</div>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- Create project modal -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box prj-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">New Project</h2>
+        <button type="button" class="modal-close" (click)="showCreate.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="prj-modal-body">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input class="form-input" type="text" placeholder="Project title"
+            [value]="newTitle()" (input)="newTitle.set($any($event.target).value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input prj-textarea" rows="2" placeholder="Optional description"
+            [value]="newDesc()" (input)="newDesc.set($any($event.target).value)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team *</label>
+          <select class="form-input" [value]="newTeamId()"
+            (change)="newTeamId.set($any($event.target).value)">
+            <option value="">Select a team…</option>
+            @for (t of teams(); track t._id) {
+              <option [value]="t._id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" [value]="newStatus()"
+            (change)="newStatus.set($any($event.target).value)">
+            @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+          </select>
+        </div>
+        <div class="prj-modal-dates">
+          <div class="form-group prj-flex-1">
+            <label class="form-label">Start Date</label>
+            <input class="form-input" type="date" [value]="newStart()"
+              (change)="newStart.set($any($event.target).value)">
+          </div>
+          <div class="form-group prj-flex-1">
+            <label class="form-label">End Date</label>
+            <input class="form-input" type="date" [value]="newEnd()"
+              (change)="newEnd.set($any($event.target).value)">
+          </div>
+        </div>
+
+        @if (createError()) {
+          <div class="alert-error prj-fs-13">{{ createError() }}</div>
+        }
+
+        <div class="prj-modal-actions">
+          <button type="button" class="btn-ghost" (click)="showCreate.set(false)">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="creating()" (click)="createProject()">
+            {{ creating() ? 'Creating…' : 'Create Project' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

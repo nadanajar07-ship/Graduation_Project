@@ -1,0 +1,90 @@
+/* ══ Teams ══════════════════════════════════════════════════ */
+.team-card-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.team-card-item.active {
+  border-color: var(--indigo);
+  background: var(--indigo-soft);
+}
+.team-card-item:hover { background: var(--bg-hover); }
+
+.team-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  background: var(--indigo-soft);
+  color: var(--indigo);
+  flex-shrink: 0;
+}
+
+.manager-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  margin-left: 6px;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.tm-layout   { display: flex; gap: 20px; height: 100%; align-items: flex-start; }
+.tm-sidebar  { min-width: 260px; max-width: 280px; flex-shrink: 0; }
+.tm-header   { margin-bottom: 16px; }
+.tm-alert    { margin-bottom: 12px; font-size: 12px; }
+.tm-skeletons{ display: flex; flex-direction: column; gap: 8px; }
+.tm-skeleton-row { height: 52px; border-radius: 8px; }
+.tm-list     { display: flex; flex-direction: column; gap: 6px; }
+.tm-detail   { flex: 1; min-width: 0; }
+.tm-detail-card { padding: 20px; }
+
+/* ── Inline edit ──────────────────────────────────────────── */
+.tm-edit-card    { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.tm-edit-actions { display: flex; gap: 6px; }
+.tm-fs-11 { font-size: 11px; }
+.tm-fs-12 { font-size: 12px; }
+.tm-fs-13 { font-size: 13px; }
+.tm-flex-1 { flex: 1; }
+.tm-btn-sm { font-size: 11px; padding: 4px 12px; }
+
+/* ── Card content ─────────────────────────────────────────── */
+.tm-card-row    { display: flex; align-items: center; gap: 8px; }
+.tm-card-main   { flex: 1; min-width: 0; }
+.tm-card-title  { font-size: 13px; font-weight: 500; color: var(--color-text-primary);
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-card-sub    { font-size: 11px; color: var(--color-text-tertiary); }
+.tm-card-actions { display: flex; gap: 4px; opacity: .6; }
+
+/* ── Detail panel ─────────────────────────────────────────── */
+.tm-detail-head  { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.tm-detail-title { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 4px; }
+.tm-detail-desc  { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+
+/* ── Members ──────────────────────────────────────────────── */
+.tm-members       { margin-bottom: 20px; }
+.tm-members-title { font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 10px; }
+.tm-members-empty { font-size: 12px; color: var(--color-text-tertiary); }
+.tm-members-list  { display: flex; flex-direction: column; gap: 8px; }
+.tm-member-row    { display: flex; align-items: center; gap: 10px; }
+.tm-member-av     { font-size: 12px; }
+.tm-member-main   { flex: 1; }
+.tm-member-name   { font-size: 13px; color: var(--color-text-primary); }
+.tm-member-btn    { font-size: 11px; padding: 3px 10px; }
+.tm-add-row       { display: flex; gap: 8px; align-items: center; }
+.tm-add-select    { flex: 1; font-size: 13px; }
+.tm-add-btn       { font-size: 12px; padding: 6px 14px; white-space: nowrap; }
+
+/* ── Empty detail ─────────────────────────────────────────── */
+.tm-empty-detail { flex: 1; display: flex; align-items: center; justify-content: center; }
+.tm-empty-inner  { text-align: center; color: var(--color-text-tertiary); }
+.tm-empty-icon   { font-size: 32px; margin-bottom: 8px; }
+.tm-empty-text   { font-size: 14px; }
+
+/* ── Modal ────────────────────────────────────────────────── */
+.tm-modal        { max-width: 400px; }
+.tm-modal-body   { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.tm-modal-actions{ display: flex; gap: 8px; justify-content: flex-end; }

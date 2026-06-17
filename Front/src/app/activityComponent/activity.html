@@ -1,0 +1,73 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Activity</h1>
+      <p class="page-sub">A timeline of everything happening across your organization</p>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="act-filters">
+    @for (f of filters; track f.key) {
+      <button type="button" class="act-chip" [class.act-chip-active]="activeFilter() === f.key"
+              (click)="setFilter(f.key)">{{ f.label }}</button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="act-timeline">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton skeleton-row skel-row-70"></div>
+      }
+    </div>
+  }
+
+  @if (!loading() && groups().length === 0 && !error()) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">🕓</div>
+      <div class="empty-state-title">No activity yet</div>
+      <div class="empty-state-sub">Actions like creating tasks, closing sprints, and adding members will appear here.</div>
+    </div>
+  }
+
+  @if (!loading() && groups().length > 0) {
+    <div class="act-timeline">
+      @for (group of groups(); track group.date) {
+        <div class="act-day">
+          <div class="act-day-label">{{ dayLabel(group.date) }}</div>
+          <div class="act-day-items">
+            @for (it of group.activities; track it._id || it.createdAt) {
+              <div class="act-row">
+                <div class="act-icon" [class]="iconClass(it)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="icon(it)"/>
+                  </svg>
+                </div>
+                <div class="act-line"></div>
+                <div class="act-body">
+                  <p class="act-text">
+                    <span class="act-actor">{{ actorName(it) }}</span>
+                    <span class="act-verb">{{ actionVerb(it) }}</span>
+                    @if (entityLabel(it)) { <span class="act-entity">{{ entityLabel(it) }}</span> }
+                    @if (it.entityType) { <span class="act-badge">{{ it.entityType }}</span> }
+                  </p>
+                  <span class="act-time">{{ time(it.createdAt) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (hasMore()) {
+        <div class="center-mt8">
+          <button type="button" class="btn-ghost" (click)="loadMore()">Load more</button>
+        </div>
+      }
+    </div>
+  }
+</div>

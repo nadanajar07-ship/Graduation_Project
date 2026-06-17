@@ -1,0 +1,353 @@
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+.call-fullpanel {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #0a0a18;
+  display: flex;
+  flex-direction: column;
+}
+.call-bg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.call-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  position: relative;
+  z-index: 10;
+}
+.call-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 1.5s infinite;
+}
+.call-room-name { flex: 1; }
+.call-pcnt { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 400; }
+.call-remote-wrap {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  overflow: hidden;
+  align-content: center;
+  justify-content: center;
+  background: #0d0d1a;
+}
+.call-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255,255,255,.4);
+  font-size: 14px;
+}
+.call-waiting-icon { font-size: 2.5rem; }
+.call-local-pip {
+  position: absolute;
+  right: 16px;
+  bottom: 96px;
+  width: 180px;
+  height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #1a1a2e;
+  border: 2px solid rgba(255,255,255,.1);
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.call-error-banner {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(239,68,68,.12);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 10;
+}
+.call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,.55);
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+.call-ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background .15s;
+  min-width: 80px;
+}
+.call-ctrl-btn:hover { background: rgba(255,255,255,.18); }
+.call-ctrl-btn.call-ctrl-active { background: rgba(239,68,68,.2); color: #ef4444; }
+.call-ctrl-end { background: #ef4444; min-width: 100px; }
+.call-ctrl-end:hover { background: #dc2626; }
+
+.call-minimize-btn {
+  margin-left: auto;
+  background: rgba(255,255,255,.12);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.call-minimize-btn:hover { background: rgba(255,255,255,.22); }
+
+.call-mini-chip {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #1a1a2e;
+  border: 1px solid rgba(99,102,241,.5);
+  border-radius: 40px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.call-mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 1.5s infinite;
+}
+.call-mini-label { color: #c7d2fe; }
+.call-mini-restore, .call-mini-end {
+  background: rgba(255,255,255,.1);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.call-mini-restore:hover { background: rgba(99,102,241,.4); }
+.call-mini-end { background: rgba(239,68,68,.3); }
+.call-mini-end:hover { background: #ef4444; }
+
+.call-error-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(239,68,68,.1);
+  border: 1px solid #ef4444;
+  font-size: 13px;
+  color: #ef4444;
+  max-width: 300px;
+}
+.call-error-close {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ── Incoming Call Banner ─────────────────────────────────── */
+.incoming-call-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #1e1e3a;
+  border: 1px solid #6366f1;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  min-width: 280px;
+  animation: slideInRight .3s ease;
+}
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.incoming-call-icon { font-size: 24px; }
+.incoming-call-info { flex: 1; }
+.incoming-call-name { font-weight: 600; font-size: 14px; color: #e2e8f0; }
+.incoming-call-sub  { font-size: 12px; color: #94a3b8; }
+.incoming-call-actions { display: flex; gap: 8px; }
+.call-accept-btn  { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; background: #10b981; color: #fff; font-size: 13px; font-weight: 600; }
+.call-decline-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; background: #ef4444; color: #fff; font-size: 13px; font-weight: 600; }
+.call-accept-btn:hover  { background: #059669; }
+.call-decline-btn:hover { background: #dc2626; }
+
+/* ── Raised-hands queue ─────────────────────────────────── */
+.call-hands-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(0,0,0,.3);
+}
+.call-hand-chip {
+  background: rgba(251,191,36,.18);
+  color: #fbbf24;
+  border: 1px solid rgba(251,191,36,.35);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── In-call chat badge on the control button ───────────── */
+.call-chat-badge {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  padding: 0 4px;
+}
+.call-ctrl-btn { position: relative; }
+
+/* ── In-call chat panel ─────────────────────────────────── */
+.call-chat-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 92px;
+  width: 320px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(17,24,39,.96);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 5;
+}
+.call-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.call-chat-close {
+  background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;
+}
+.call-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.call-chat-empty { color: #64748b; font-size: 12px; text-align: center; margin: auto 0; }
+.call-chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 85%;
+  align-self: flex-start;
+}
+.call-chat-msg.call-chat-mine { align-self: flex-end; text-align: right; }
+.call-chat-author { font-size: 11px; color: #94a3b8; }
+.call-chat-text {
+  background: rgba(255,255,255,.08);
+  color: #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  word-break: break-word;
+}
+.call-chat-mine .call-chat-text { background: rgba(59,130,246,.25); }
+.call-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.call-chat-input {
+  flex: 1;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.call-chat-send {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.call-chat-send:hover { background: #2563eb; }

@@ -1,0 +1,107 @@
+/* ══ Webhooks ════════════════════════════════════════════════ */
+.wh-warning-box {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  border: 1px solid rgba(245,158,11,.3);
+  margin-bottom: 16px;
+}
+.wh-warning-title { font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 6px; }
+
+.wh-success-box {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--green-soft);
+  border: 1px solid rgba(34,197,94,.3);
+  font-size: 12px; color: var(--green);
+}
+
+.wh-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: box-shadow .15s;
+}
+.wh-card:hover { box-shadow: var(--shadow-sm); }
+
+.wh-event-chip {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.wh-event-chip.active {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+
+.wh-status-active   { background: var(--green-soft);  color: var(--green);  }
+.wh-status-inactive { background: var(--color-background-secondary); color: var(--text-3); }
+.wh-status-error    { background: var(--red-soft);    color: var(--red);    }
+
+/* ── Layout ───────────────────────────────────────────────── */
+.wh-header { margin-bottom: 20px; }
+.wh-alert  { margin-bottom: 16px; }
+.wh-list   { display: flex; flex-direction: column; gap: 10px; }
+.wh-skeleton-row { height: 80px; border-radius: 8px; }
+
+/* ── One-time secret banner ───────────────────────────────── */
+.wh-secret-row     { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.wh-secret-code    { flex: 1; font-size: 12px; font-family: var(--font-mono,'JetBrains Mono',monospace);
+                     color: var(--color-text-primary); word-break: break-all;
+                     background: var(--bg-input); border: 1px solid var(--border);
+                     border-radius: 6px; padding: 8px 10px; display: block; }
+.wh-secret-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.wh-check-icon     { color: var(--green); }
+
+/* ── Test result banner ───────────────────────────────────── */
+.wh-test-result {
+  padding: 10px 14px; border-radius: 6px;
+  background: var(--green-soft); border: 1px solid var(--green);
+  margin-bottom: 16px; font-size: 13px; color: var(--green);
+}
+.wh-ml-8 { margin-left: 8px; }
+
+/* ── Edit form ────────────────────────────────────────────── */
+.wh-edit-card { padding: 16px; }
+.wh-edit-col  { display: flex; flex-direction: column; gap: 10px; }
+.wh-edit-row  { display: flex; gap: 10px; }
+.wh-flex-1    { flex: 1; }
+.wh-flex-2    { flex: 2; }
+.wh-label-mb  { margin-bottom: 6px; }
+.wh-events-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.wh-active-row  { display: flex; align-items: center; gap: 10px; }
+.wh-checkbox-label { font-size: 13px; color: var(--color-text-primary); cursor: pointer;
+                     display: flex; align-items: center; gap: 6px; }
+.wh-spacer { flex: 1; }
+.wh-fs-12  { font-size: 12px; }
+
+/* ── Webhook card ─────────────────────────────────────────── */
+.wh-card-row   { display: flex; align-items: flex-start; gap: 12px; }
+.wh-dot-wrap   { margin-top: 2px; }
+.wh-dot        { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.wh-card-main  { flex: 1; min-width: 0; }
+.wh-title-row  { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.wh-name       { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.wh-badge-inactive { font-size: 10px; padding: 1px 6px; border-radius: 4px;
+                     background: var(--color-background-secondary); color: var(--text-3); }
+.wh-url        { font-size: 12px; color: var(--color-text-tertiary); word-break: break-all; margin-bottom: 6px; }
+.wh-chips-row  { display: flex; flex-wrap: wrap; gap: 4px; }
+.wh-event-tag  { font-size: 10px; padding: 1px 6px; border-radius: 4px;
+                 background: var(--indigo-soft); color: var(--indigo); }
+.wh-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.wh-btn-xs     { font-size: 11px; padding: 3px 10px; }
+.wh-btn-sm     { font-size: 11px; padding: 5px 10px; }
+.wh-btn-sm-nowrap { font-size: 11px; padding: 5px 10px; white-space: nowrap; }
+
+/* ── Modal ────────────────────────────────────────────────── */
+.wh-modal      { max-width: 520px; }
+.wh-modal-body { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.wh-info-box   { font-size: 12px; color: var(--color-text-tertiary); padding: 8px;
+                 border-radius: 6px; background: var(--color-background-secondary); }
+.wh-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.wh-fs-13 { font-size: 13px; }

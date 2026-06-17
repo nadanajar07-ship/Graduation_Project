@@ -1,0 +1,54 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Saved Messages</h1>
+      <p class="page-sub">Messages you've bookmarked</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error mb-16">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="msglist">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton skeleton-row skel-row-70"></div>
+      }
+    </div>
+  }
+
+  @if (!loading() && messages().length === 0) {
+    <div class="empty-state-full">
+      <div class="empty-state-icon">🔖</div>
+      <div class="empty-state-title">No saved messages</div>
+      <div class="empty-state-sub">Bookmark messages in chats to find them here later.</div>
+    </div>
+  }
+
+  @if (!loading() && messages().length > 0) {
+    <div class="msglist">
+      @for (msg of messages(); track msg._id) {
+        <div class="card msgcard">
+          <div class="msgcard-row">
+            <div class="av av-36 msgcard-av">{{ senderInitial(msg) }}</div>
+            <div class="msgcard-body">
+              <div class="msgcard-head">
+                <span class="msgcard-sender">{{ senderName(msg) }}</span>
+                <span class="msgcard-meta">in #{{ roomName(msg) }}</span>
+                <span class="msgcard-meta msgcard-meta-end">{{ formatDate(createdAt(msg)) }} {{ formatTime(createdAt(msg)) }}</span>
+              </div>
+              <p class="msgcard-text">{{ content(msg) }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (hasMore()) {
+        <div class="center-mt8">
+          <button type="button" class="btn-ghost" (click)="loadMore()">Load more</button>
+        </div>
+      }
+    </div>
+  }
+</div>

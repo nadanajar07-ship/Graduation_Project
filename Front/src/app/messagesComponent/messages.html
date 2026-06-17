@@ -1,0 +1,963 @@
+<div class="messages-shell">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+  <div class="conv-list">
+
+    <!-- Search -->
+    <div class="conv-search-wrap">
+      <svg class="conv-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+      </svg>
+      <input class="conv-search" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Search..."/>
+    </div>
+
+    @if (loadingRooms()) {
+      <div class="mc-loading">Loading…</div>
+    }
+
+    <!-- Search results -->
+    @if (!loadingRooms() && filteredRooms) {
+      <div class="conv-section-label">Results</div>
+      @for (room of filteredRooms; track room._id) {
+        <div class="conv-item" [class.conv-active]="room._id === selectedRoom()?._id"
+             (click)="selectRoom(room)">
+          @if (room.type === 'channel') {
+            <div class="conv-icon">#</div>
+          } @else if (room.type === 'group' || room.type === 'organization') {
+            <div class="conv-icon conv-group-icon">{{ getRoomInitial(room) }}</div>
+          } @else {
+            <div class="conv-av emp-av av1">{{ getRoomInitial(room) }}</div>
+          }
+          <span class="conv-name">{{ getRoomDisplayName(room) }}</span>
+        </div>
+      }
+    }
+
+    @if (!loadingRooms() && !filteredRooms) {
+
+      <!-- Channels -->
+      <div class="conv-section-row">
+        <span class="conv-section-label">Channels</span>
+        <div class="mc-row-4">
+          <button type="button" class="conv-add-btn mc-fs-9" (click)="openBrowseChannels()" title="Browse channels">⊕</button>
+          <button type="button" class="conv-add-btn" (click)="showCreateChannel.set(true)" title="New channel">+</button>
+        </div>
+      </div>
+      @for (room of channels; track room._id) {
+        <div class="conv-item" [class.conv-active]="room._id === selectedRoom()?._id"
+             (click)="selectRoom(room)">
+          <div class="conv-icon">#</div>
+          <span class="conv-name">{{ getRoomDisplayName(room) }}</span>
+          @if (getUnread(room) > 0) {
+            <span class="conv-badge">{{ getUnread(room) }}</span>
+          }
+        </div>
+      }
+
+      <!-- Groups -->
+      <div class="conv-section-row mc-mt-half">
+        <span class="conv-section-label">Group Chats</span>
+        <button type="button" class="conv-add-btn" (click)="showCreateGroup.set(true)" title="New group">+</button>
+      </div>
+      @for (room of groups; track room._id) {
+        <div class="conv-item" [class.conv-active]="room._id === selectedRoom()?._id"
+             (click)="selectRoom(room)">
+          <div class="conv-icon conv-group-icon">{{ getRoomInitial(room) }}</div>
+          <span class="conv-name">{{ getRoomDisplayName(room) }}</span>
+          @if (getUnread(room) > 0) {
+            <span class="conv-badge">{{ getUnread(room) }}</span>
+          }
+        </div>
+      }
+
+      <!-- DMs -->
+      <div class="conv-section-row mc-mt-half">
+        <span class="conv-section-label">Direct Messages</span>
+        <button type="button" class="conv-add-btn" (click)="showCreateDM.set(true)" title="New DM">+</button>
+      </div>
+      @for (room of dms; track room._id) {
+        <div class="conv-item" [class.conv-active]="room._id === selectedRoom()?._id"
+             (click)="selectRoom(room)">
+          <div class="conv-av emp-av av1">{{ getRoomInitial(room) }}</div>
+          <span class="conv-name">{{ getRoomDisplayName(room) }}</span>
+          @if (getUnread(room) > 0) {
+            <span class="conv-badge">{{ getUnread(room) }}</span>
+          }
+        </div>
+      }
+
+    }
+  </div>
+
+  <!-- ══ CHAT AREA ════════════════════════════════════════════ -->
+  @if (selectedRoom()) {
+    <div class="chat-area">
+
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="chat-header-left">
+          @if (selectedRoom()!.type === 'channel') {
+            <span class="chat-hash">#</span>
+          } @else {
+            <div class="chat-group-av">{{ getRoomInitial(selectedRoom()!) }}</div>
+          }
+          <div>
+            <span class="chat-title">{{ getRoomDisplayName(selectedRoom()!) }}</span>
+            <span class="chat-sub">{{ selectedRoom()!.members.length }} members</span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <div class="chat-divider"></div>
+          <!-- Search -->
+          <button type="button" class="chat-action-btn" title="Search messages"
+                  [class.chat-btn-active]="showSearch()"
+                  (click)="showSearch.set(!showSearch()); searchQuery.set(''); searchResults.set([])">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+          </button>
+          <!-- Pinned messages -->
+          @if (pinnedMessages().length > 0) {
+            <button type="button" class="chat-action-btn" title="Pinned messages"
+                    [class.chat-btn-active]="showPinned()" (click)="togglePinnedBanner()">
+              📌<span class="chat-member-count">{{ pinnedMessages().length }}</span>
+            </button>
+          }
+          <!-- Saved messages -->
+          <button type="button" class="chat-action-btn" title="Saved messages" (click)="openSaved()">🔖</button>
+          <!-- Mentions inbox -->
+          <button type="button" class="chat-action-btn" title="Mentions" (click)="openMentions()">@</button>
+          <!-- Scheduled messages -->
+          <button type="button" class="chat-action-btn" title="Scheduled messages" (click)="loadScheduled()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+            </svg>
+          </button>
+          <!-- Call button -->
+          <button type="button" class="chat-action-btn" title="Start / Join call"
+                  [disabled]="callService.connecting()"
+                  (click)="startOrJoinCall()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
+            </svg>
+            @if (activeCallInfo()) {
+              <span class="mc-online-dot"></span>
+            }
+          </button>
+          <!-- Call history -->
+          <button type="button" class="chat-action-btn" title="Call history" (click)="loadCallHistory()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+            </svg>
+          </button>
+          <button type="button" class="chat-action-btn" [class.chat-btn-active]="showMembers()"
+                  (click)="showMembers.set(!showMembers())">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
+            </svg>
+            <span class="chat-member-count">{{ selectedRoom()!.members.length }}</span>
+          </button>
+          <!-- Add member (channels and groups only) -->
+          @if (selectedRoom()!.type !== 'direct') {
+            <button type="button" class="chat-action-btn" title="Add member"
+                    (click)="showAddMember.set(!showAddMember()); addMemberQuery.set('')">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+              </svg>
+            </button>
+          }
+          <!-- Leave room (channels and groups only, not DM) -->
+          @if (selectedRoom()!.type !== 'direct') {
+            <button type="button" class="chat-action-btn mc-leave-btn" title="Leave room"
+                    (click)="leaveCurrentRoom()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Pinned messages banner -->
+      @if (showPinned() && pinnedMessages().length > 0) {
+        <div class="pinned-banner">
+          <div class="pinned-banner-hdr">
+            <span class="pinned-banner-title">📌 Pinned ({{ pinnedMessages().length }})</span>
+            <button type="button" class="btn-ghost mc-panel-close" (click)="showPinned.set(false)">✕</button>
+          </div>
+          <div class="pinned-banner-list">
+            @for (pm of pinnedMessages(); track pm._id) {
+              <div class="pinned-item" (click)="jumpToMessage(selectedRoom()!._id, pm._id)">
+                <span class="pinned-item-sender">{{ pm.senderId?.username ?? 'Someone' }}</span>
+                <span class="pinned-item-text">{{ pm.content }}</span>
+                <button type="button" class="pinned-item-unpin" title="Unpin"
+                  (click)="$event.stopPropagation(); togglePin(pm._id)">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Add Member Panel -->
+      @if (showAddMember() && selectedRoom()!.type !== 'direct') {
+        <div class="mc-panel">
+          <div class="mc-panel-head">
+            <span class="mc-panel-title">Add member to #{{ getRoomDisplayName(selectedRoom()!) }}</span>
+            <button type="button" class="btn-ghost mc-panel-close" (click)="showAddMember.set(false)">✕</button>
+          </div>
+          <input class="mc-input"
+            placeholder="Search members…"
+            [ngModel]="addMemberQuery()" (ngModelChange)="addMemberQuery.set($event)"/>
+          <div class="mc-candidate-list">
+            @for (m of addMemberCandidates; track m._id) {
+              <div class="mc-candidate-row">
+                <div class="mc-candidate-av">
+                  {{ m.username.charAt(0).toUpperCase() }}
+                </div>
+                <span class="mc-candidate-name">{{ m.username }}</span>
+                <button type="button" class="btn-primary mc-btn-add"
+                  [disabled]="addingMemberId() === m._id"
+                  (click)="addMemberToRoom(m._id)">
+                  {{ addingMemberId() === m._id ? '…' : 'Add' }}
+                </button>
+              </div>
+            } @empty {
+              <p class="mc-empty-note">
+                All org members are already in this room.
+              </p>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Message search panel -->
+      @if (showSearch()) {
+        <div class="mc-panel">
+          <div class="mc-row-6">
+            <input class="mc-search-input"
+              placeholder="Search messages in this room..."
+              [ngModel]="msgSearchQuery()" (ngModelChange)="msgSearchQuery.set($event)"
+              (keydown.enter)="runSearch()"/>
+            <button type="button" class="btn-primary mc-btn-sm"
+              [disabled]="searching()" (click)="runSearch()">{{ searching() ? '…' : 'Search' }}</button>
+            <button type="button" class="btn-ghost mc-btn-sm-ghost"
+              (click)="clearSearch()">✕</button>
+          </div>
+          @if (searchResults().length > 0) {
+            <div class="mc-search-results">
+              @for (r of searchResults(); track r._id) {
+                <div class="mc-search-result">
+                  <div class="mc-result-sender">{{ r.senderId.username }}</div>
+                  <div class="mc-text-13">{{ r.content }}</div>
+                </div>
+              }
+            </div>
+          }
+          @if (!searching() && msgSearchQuery().trim() && searchResults().length === 0) {
+            <div class="mc-no-results">No results found.</div>
+          }
+        </div>
+      }
+
+      <!-- Channel Tabs strip (channels only) -->
+      @if (selectedRoom()!.type === 'channel') {
+        <div class="mc-tabs">
+          <!-- Default "Chat" tab -->
+          <div class="mc-tab-active">
+            💬 Chat
+          </div>
+          @for (tab of roomTabs(); track tab._id) {
+            @if (editingTabId() === tab._id) {
+              <div class="mc-tab-edit">
+                <input class="mc-tab-input"
+                  [value]="editingTabName()"
+                  (input)="editingTabName.set($any($event.target).value)"
+                  (keydown.enter)="saveEditTab()"
+                  (keydown.escape)="cancelEditTab()">
+                <button type="button" class="mc-tab-save"
+                  [disabled]="savingTabEdit()" (click)="saveEditTab()">✓</button>
+                <button type="button" class="mc-tab-cancel"
+                  (click)="cancelEditTab()">✕</button>
+              </div>
+            } @else {
+              <div class="mc-tab"
+                   (dblclick)="startEditTab(tab)">
+                <span title="Double-click to rename">{{ tab.name }}</span>
+                <span class="mc-tab-type">({{ tab.type }})</span>
+                <button type="button" class="mc-tab-remove"
+                  (click)="removeTab(tab._id)" title="Remove tab">×</button>
+              </div>
+            }
+          }
+          <!-- Add tab button -->
+          @if (!showAddTab()) {
+            <button type="button" class="mc-add-tab-btn"
+              (click)="showAddTab.set(true)">+ Add tab</button>
+          } @else {
+            <div class="mc-tab-edit">
+              <input class="mc-tab-input2"
+                placeholder="Tab name"
+                [value]="newTabName()" (input)="newTabName.set($any($event.target).value)"
+                (keydown.enter)="createTab()" (keydown.escape)="showAddTab.set(false)">
+              <select class="mc-tab-select"
+                [value]="newTabType()" (change)="newTabType.set($any($event.target).value)">
+                @for (t of tabTypes; track t) {
+                  <option [value]="t">{{ t }}</option>
+                }
+              </select>
+              <button type="button" class="btn-primary mc-btn-xs"
+                [disabled]="addingTab() || !newTabName().trim()" (click)="createTab()">Add</button>
+              <button type="button" class="btn-ghost mc-btn-xs-ghost"
+                (click)="showAddTab.set(false)">Cancel</button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Body -->
+      <div class="chat-body">
+
+        <!-- Messages -->
+        <div class="chat-messages" #chatScroll>
+          @if (loadingMessages()) {
+            <div class="mc-msgs-loading">Loading messages…</div>
+          }
+
+          @if (!loadingMessages() && messages().length === 0) {
+            <div class="mc-msgs-empty">
+              No messages yet. Say hello! 👋
+            </div>
+          }
+
+          @if (messages().length > 0) {
+            <div class="date-divider">Today</div>
+          }
+
+          @for (msg of messages(); track msg._id) {
+            <div class="msg-row" [id]="'msg-' + msg._id"
+                 [class.msg-own]="isMsgOwn(msg)"
+                 [class.msg-highlight]="highlightedMsgId() === msg._id">
+
+              @if (!isMsgOwn(msg)) {
+                <div class="msg-av emp-av av1">
+                  {{ msg.senderId.username.charAt(0).toUpperCase() }}
+                </div>
+              } @else {
+                <div class="msg-own-spacer"></div>
+              }
+
+              <div class="msg-body" [class.msg-own-body]="isMsgOwn(msg)">
+                @if (!isMsgOwn(msg)) {
+                  <div class="msg-meta">
+                    <span class="msg-sender">{{ msg.senderId.username }}</span>
+                    <span class="msg-time">{{ formatTime(msg.createdAt) }}</span>
+                  </div>
+                }
+
+                <!-- Editing mode -->
+                @if (editingMsgId() === msg._id) {
+                  <div class="msg-edit-wrap">
+                    <input class="msg-edit-input"
+                           [ngModel]="editingText()"
+                           (ngModelChange)="editingText.set($event)"
+                           (keydown.enter)="saveEdit()"
+                           (keydown.escape)="cancelEdit()"/>
+                    <div class="msg-edit-actions">
+                      <button type="button" class="msg-edit-btn msg-edit-save" (click)="saveEdit()">Save</button>
+                      <button type="button" class="msg-edit-btn msg-edit-cancel" (click)="cancelEdit()">Cancel</button>
+                    </div>
+                  </div>
+                } @else {
+
+                  <!-- Text -->
+                  @if (msg.messageType === 'text') {
+                    <div class="msg-text" [class.msg-own-text]="isMsgOwn(msg)">
+                      @for (seg of messageSegments(msg.content); track $index) {
+                        @if (seg.mention) {
+                          <span class="mention-tag">{{ seg.text }}</span>
+                        } @else {
+                          <span>{{ seg.text }}</span>
+                        }
+                      }
+                      @if (msg.edited) { <span class="mc-edited"> (edited)</span> }
+                      @if (isMsgOwn(msg)) {
+                        <span class="msg-own-time">{{ formatTime(msg.createdAt) }}</span>
+                      }
+                    </div>
+                  }
+
+                  <!-- Attachment / Image / File -->
+                  @if (msg.messageType === 'image' || msg.messageType === 'file') {
+                    <div class="attach-bubble" [class.attach-own]="isMsgOwn(msg)">
+                      <span class="attach-bubble-icon">
+                        {{ msg.messageType === 'image' ? '🖼️' : '📄' }}
+                      </span>
+                      <div class="attach-bubble-info">
+                        @for (att of (msg.attachments ?? []); track att.url) {
+                          <span class="attach-bubble-name">{{ att.originalName }}</span>
+                        }
+                      </div>
+                      @if (isMsgOwn(msg)) {
+                        <span class="msg-own-time mc-self-end">{{ formatTime(msg.createdAt) }}</span>
+                      }
+                    </div>
+                  }
+
+                  <!-- Message actions (hover) -->
+                  <div class="msg-actions-row">
+                    <!-- Reaction button -->
+                    <button type="button" class="msg-action-icon" (click)="toggleReactionMenu(msg._id)" title="React">
+                      😊
+                    </button>
+                    <!-- Bookmark -->
+                    <button type="button" class="msg-action-icon" (click)="bookmarkMessage(msg._id)" title="Save message">
+                      🔖
+                    </button>
+                    <!-- Pin -->
+                    <button type="button" class="msg-action-icon" [class.msg-action-pinned]="isPinned(msg._id)"
+                      (click)="togglePin(msg._id)" [title]="isPinned(msg._id) ? 'Unpin' : 'Pin message'">
+                      📌
+                    </button>
+                    <!-- Edit (own messages only) -->
+                    @if (isMsgOwn(msg) && msg.messageType === 'text') {
+                      <button type="button" class="msg-action-icon" (click)="startEdit(msg)" title="Edit">
+                        ✏️
+                      </button>
+                    }
+                    <!-- Delete (own messages only) -->
+                    @if (isMsgOwn(msg)) {
+                      <button type="button" class="msg-action-icon msg-action-delete" (click)="deleteMessage(msg._id)" title="Delete">
+                        🗑️
+                      </button>
+                    }
+                    <!-- Forward -->
+                    <button type="button" class="msg-action-icon" (click)="forwardingMsgId.set(msg._id)" title="Forward message">↗</button>
+                    <!-- Thread -->
+                    <button type="button" class="msg-action-icon" (click)="openThread(msg._id)" title="Reply in thread">💬</button>
+                  </div>
+
+                  <!-- Reaction picker -->
+                  @if (reactionMenuMsgId() === msg._id) {
+                    <div class="reaction-picker">
+                      @for (emoji of emojiOptions; track emoji) {
+                        <button type="button" class="reaction-pick-btn" (click)="addReaction(msg._id, emoji)">
+                          {{ emoji }}
+                        </button>
+                      }
+                    </div>
+                  }
+
+                }
+
+                <!-- Reactions display -->
+                @if (getGroupedReactions(msg).length > 0) {
+                  <div class="msg-reactions">
+                    @for (r of getGroupedReactions(msg); track r.emoji) {
+                      <span class="reaction-pill" [class.reaction-mine]="r.mine"
+                            (click)="addReaction(msg._id, r.emoji)">
+                        {{ r.emoji }} {{ r.count > 1 ? r.count : '' }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Typing indicator -->
+          @if (typingUsers().length > 0) {
+            <div class="typing-indicator">
+              <span>{{ typingUsers().join(', ') }} {{ typingUsers().length === 1 ? 'is' : 'are' }} typing…</span>
+            </div>
+          }
+        </div>
+
+        <!-- Members panel -->
+        <div class="members-panel" [class.members-open]="showMembers()">
+          <div class="members-panel-hdr">
+            <span class="members-panel-title">Members ({{ selectedRoom()!.members.length }})</span>
+            <button type="button" class="members-close" (click)="showMembers.set(false)">✕</button>
+          </div>
+          <div class="members-list">
+            @for (m of selectedRoom()!.members; track m._id) {
+              <div class="member-item">
+                <div class="member-av-wrap">
+                  <div class="emp-av av1 mc-member-av">
+                    {{ m.username.charAt(0).toUpperCase() }}
+                  </div>
+                </div>
+                <div class="member-info">
+                  <span class="member-name">{{ m.username }}</span>
+                  @if (m._id === currentUser?._id) {
+                    <span class="member-role">You</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Thread panel -->
+        @if (threadMsgId()) {
+          <div class="members-panel members-open mc-thread-panel">
+            <div class="members-panel-hdr">
+              <span class="members-panel-title">Thread</span>
+              <button type="button" class="members-close" (click)="closeThread()">✕</button>
+            </div>
+            <div class="mc-thread-body">
+              @if (threadLoading()) {
+                <div class="mc-thread-note">Loading…</div>
+              }
+              @for (m of threadMsgs(); track m._id) {
+                <div class="mc-thread-msg">
+                  <div class="mc-thread-sender">{{ m.senderId.username }}</div>
+                  <div class="mc-text-13">{{ m.content }}</div>
+                </div>
+              }
+              @if (!threadLoading() && threadMsgs().length === 0) {
+                <div class="mc-thread-note">No replies yet.</div>
+              }
+            </div>
+            <div class="mc-thread-input-row">
+              <input class="mc-thread-input"
+                placeholder="Reply in thread…"
+                [ngModel]="threadReply()" (ngModelChange)="threadReply.set($event)"
+                (keydown.enter)="sendThreadReply()"/>
+              <button type="button" class="btn-primary mc-btn-send"
+                [disabled]="!threadReply().trim()" (click)="sendThreadReply()">↑</button>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Input bar -->
+      <div class="chat-input-bar">
+        <!-- @mention autocomplete -->
+        @if (mentionMatches().length > 0) {
+          <div class="mention-pop">
+            @for (m of mentionMatches(); track m._id) {
+              <button type="button" class="mention-pop-row" (click)="pickMention(m.username)">
+                <span class="mention-pop-av">{{ m.username.charAt(0).toUpperCase() }}</span>
+                <span class="mention-pop-name">{{ m.username }}</span>
+              </button>
+            }
+          </div>
+        }
+        <input class="chat-input" type="text" #composerInput
+               [ngModel]="messageText()"
+               (ngModelChange)="onComposeInput($event)"
+               (keydown)="handleKeydown($event)"
+               (keydown.escape)="mentionMatches.set([])"
+               placeholder="Message {{ selectedRoom()!.type === 'channel' ? '#' : '' }}{{ getRoomDisplayName(selectedRoom()!) }}…"/>
+        <button type="button" class="send-btn" (click)="sendMessage()" [disabled]="!messageText().trim()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  } @else if (!loadingRooms()) {
+    <div class="chat-area mc-empty-chat">
+      <div class="mc-center">
+        <p class="mc-empty-title">Select a conversation</p>
+        <p class="mc-empty-sub">Or create a new channel / group</p>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- ══ Create Channel Modal ══════════════════════════════════ -->
+@if (showCreateChannel()) {
+  <div class="modal-overlay" (click)="showCreateChannel.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">Create a Channel</span>
+        <button type="button" class="modal-x" (click)="showCreateChannel.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-lbl">Channel name</label>
+        <div class="modal-hash-wrap">
+          <span class="modal-hash">#</span>
+          <input class="modal-inp" [ngModel]="newChannelName()" (ngModelChange)="newChannelName.set($event)"
+                 placeholder="e.g. project-alpha" (keydown.enter)="createChannel()"/>
+        </div>
+      </div>
+      <div class="modal-ftr">
+        <button type="button" class="btn-outline" (click)="showCreateChannel.set(false)">Cancel</button>
+        <button type="button" class="btn-primary" (click)="createChannel()" [disabled]="!newChannelName().trim()">
+          Create Channel
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Create Group Modal ════════════════════════════════════ -->
+@if (showCreateGroup()) {
+  <div class="modal-overlay" (click)="showCreateGroup.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">New Group Chat</span>
+        <button type="button" class="modal-x" (click)="showCreateGroup.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-lbl">Group name</label>
+        <input class="modal-inp mc-pl-85"
+               [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)"
+               placeholder="e.g. Sprint Team"/>
+        <label class="modal-lbl mc-mt-85">Add members</label>
+        <div class="pick-list">
+          <!-- FIX: Use org members instead of selected room members -->
+          @for (m of orgMembers(); track m._id) {
+            @if (m._id !== currentUser?._id) {
+              <div class="pick-row"
+                   [class.pick-selected]="selectedGroupMembers().includes(m._id)"
+                   (click)="toggleGroupMember(m._id)">
+                <div class="emp-av av1 mc-pick-av">
+                  {{ m.username.charAt(0).toUpperCase() }}
+                </div>
+                <span class="pick-name">{{ m.username }}</span>
+                @if (selectedGroupMembers().includes(m._id)) {
+                  <svg class="pick-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                  </svg>
+                }
+              </div>
+            }
+          }
+          @if (orgMembers().length === 0) {
+            <div class="mc-pick-empty">
+              No members found. Invite people to your org first.
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-ftr">
+        <button type="button" class="btn-outline" (click)="showCreateGroup.set(false)">Cancel</button>
+        <button type="button" class="btn-primary" (click)="createGroup()"
+                [disabled]="!newGroupName().trim() || selectedGroupMembers().length === 0">
+          Create Group
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Create DM Modal ═══════════════════════════════════════ -->
+@if (showCreateDM()) {
+  <div class="modal-overlay" (click)="showCreateDM.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">New Direct Message</span>
+        <button type="button" class="modal-x" (click)="showCreateDM.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-lbl">Select a person</label>
+        <div class="pick-list">
+          @for (m of availableDMMembers; track m._id) {
+            <div class="pick-row" (click)="createDM(m._id)">
+              <div class="emp-av av1 mc-pick-av">
+                {{ m.username.charAt(0).toUpperCase() }}
+              </div>
+              <div class="mc-col">
+                <span class="pick-name">{{ m.username }}</span>
+                <span class="mc-pick-email">{{ m.email }}</span>
+              </div>
+            </div>
+          }
+          @if (availableDMMembers.length === 0) {
+            <div class="mc-pick-empty">
+              No more members to message. You already have a DM with everyone.
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-ftr">
+        <button type="button" class="btn-outline" (click)="showCreateDM.set(false)">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Forward modal ── -->
+@if (forwardingMsgId()) {
+  <div class="modal-overlay" (click)="forwardingMsgId.set(null)">
+    <div class="modal-box mc-modal-400" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">Forward Message</span>
+        <button type="button" class="modal-x" (click)="forwardingMsgId.set(null)">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-lbl">Forward to room</label>
+        <select class="modal-inp mc-pl-7"
+          [ngModel]="forwardTargetId()" (ngModelChange)="forwardTargetId.set($event)">
+          <option value="">— Select room —</option>
+          @for (r of rooms(); track r._id) {
+            @if (r._id !== selectedRoom()?._id) {
+              <option [value]="r._id">{{ getRoomDisplayName(r) }}</option>
+            }
+          }
+        </select>
+      </div>
+      <div class="modal-ftr">
+        <button type="button" class="btn-outline" (click)="forwardingMsgId.set(null)">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="!forwardTargetId() || forwarding()" (click)="doForward()">
+          {{ forwarding() ? 'Forwarding…' : 'Forward' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Scheduled messages modal ── -->
+@if (showScheduled()) {
+  <div class="modal-overlay" (click)="showScheduled.set(false)">
+    <div class="modal-box mc-modal-480" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">Scheduled Messages</span>
+        <button type="button" class="modal-x" (click)="showScheduled.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (scheduledMessages().length === 0) {
+          <div class="mc-sched-empty">
+            No scheduled messages.
+          </div>
+        }
+        <div class="mc-sched-list">
+          @for (sm of scheduledMessages(); track sm._id) {
+            <div class="mc-sched-item">
+              <div class="mc-flex-1">
+                <div class="mc-text-13">{{ sm.content }}</div>
+                <div class="mc-text-11-mt">
+                  Sends: {{ sm.sendAt | date:'medium' }}
+                </div>
+              </div>
+              <button type="button" class="btn-ghost mc-btn-del"
+                (click)="deleteScheduled(sm._id)">Delete</button>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn-outline mc-btn-full"
+          (click)="showScheduleForm.set(!showScheduleForm())">
+          {{ showScheduleForm() ? 'Cancel' : '+ Schedule New Message' }}
+        </button>
+        @if (showScheduleForm()) {
+          <div class="mc-sched-form">
+            <textarea class="mc-sched-textarea"
+              placeholder="Message content…"
+              [ngModel]="scheduleContent()" (ngModelChange)="scheduleContent.set($event)"></textarea>
+            <input type="datetime-local" class="mc-sched-datetime"
+              [ngModel]="scheduleSendAt()" (ngModelChange)="scheduleSendAt.set($event)"/>
+            <button type="button" class="btn-primary mc-fs-13"
+              [disabled]="!scheduleContent().trim() || !scheduleSendAt() || scheduling()"
+              (click)="scheduleMsg()">
+              {{ scheduling() ? 'Scheduling…' : 'Schedule Message' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Incoming call banner, active-call panel, minimized chip, and call-error
+     toast are all rendered globally by <app-call-overlay> in the dashboard
+     shell, so a call is answerable/controllable from any page. -->
+
+<!-- ── Call history modal ── -->
+@if (showCallHistory()) {
+  <div class="modal-overlay" (click)="showCallHistory.set(false)">
+    <div class="modal-box mc-modal-420" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Call History</h2>
+        <button type="button" class="modal-close" (click)="showCallHistory.set(false)">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      @if (callHistory().length === 0) {
+        <div class="mc-call-empty">
+          No call history for this room.
+        </div>
+      }
+      <div class="mc-call-list">
+        @for (c of callHistory(); track c._id) {
+          <div class="mc-call-item">
+            <div class="mc-call-icon">📞</div>
+            <div class="mc-flex-1">
+              <div class="mc-text-13">
+                {{ c.initiator?.username ?? 'Call' }}
+              </div>
+              <div class="mc-text-11">
+                {{ callDuration(c) }} · {{ c.participantCount ?? 0 }} participants
+              </div>
+            </div>
+            <div class="mc-call-meta">
+              <div class="mc-text-11">
+                {{ c.startedAt ? (c.startedAt | date:'shortDate') : '' }}
+              </div>
+              @if (c.recording?.status === 'ended') {
+                <button type="button" class="mc-rec-download" (click)="downloadRecording(c)">
+                  ⬇ Recording
+                </button>
+              } @else if (c.recording?.status === 'active' || c.recording?.status === 'pending') {
+                <span class="mc-rec-pending">● Recording…</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ BROWSE CHANNELS MODAL ════════════════════════════════ -->
+@if (showBrowseChannels()) {
+  <div class="modal-overlay" (click)="showBrowseChannels.set(false)">
+    <div class="modal-card mc-browse-card" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-title">Browse Channels</span>
+        <button type="button" class="modal-x" (click)="showBrowseChannels.set(false)">✕</button>
+      </div>
+
+      <div class="mc-browse-search-wrap">
+        <input class="mc-browse-input"
+          placeholder="Search public channels…"
+          [ngModel]="browseSearch()" (ngModelChange)="browseSearch.set($event)"
+          (input)="loadBrowseChannels()"/>
+      </div>
+
+      <div class="mc-browse-body">
+        @if (browseLoading()) {
+          <div class="mc-browse-loading">Loading channels…</div>
+        } @else if (browseResults().length === 0) {
+          <div class="mc-browse-empty">
+            <div class="mc-browse-empty-icon">#</div>
+            <p class="mc-browse-empty-title">No public channels found</p>
+            <p class="mc-browse-empty-text">
+              All existing channels are already joined, or no public channels exist yet.
+            </p>
+            <button type="button" class="btn-primary" (click)="showBrowseChannels.set(false); showCreateChannel.set(true)">
+              Create a Channel
+            </button>
+          </div>
+        } @else {
+          <div class="mc-browse-list">
+            @for (ch of browseResults(); track ch._id) {
+              <div class="mc-browse-item">
+                <div class="mc-browse-icon">
+                  {{ ch.icon ?? '#' }}
+                </div>
+                <div class="mc-flex-min">
+                  <div class="mc-browse-name">#{{ ch.name }}</div>
+                  @if (ch.description) {
+                    <div class="mc-browse-desc">{{ ch.description }}</div>
+                  }
+                  <div class="mc-browse-meta">
+                    {{ ch.memberCount ?? 0 }} member{{ (ch.memberCount ?? 0) !== 1 ? 's' : '' }}
+                  </div>
+                </div>
+                <button type="button" class="btn-primary mc-browse-join"
+                  [disabled]="joiningChannelId() === ch._id"
+                  (click)="joinChannel(ch._id)">
+                  {{ joiningChannelId() === ch._id ? 'Joining…' : 'Join' }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="mc-browse-footer">
+        <span class="mc-browse-count">
+          {{ browseResults().length }} public channel{{ browseResults().length !== 1 ? 's' : '' }} available
+        </span>
+        <button type="button" class="btn-outline" (click)="showBrowseChannels.set(false); showCreateChannel.set(true)">
+          + Create Channel
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ SAVED MESSAGES MODAL ══════════════════════════════════ -->
+@if (showSaved()) {
+  <div class="modal-overlay" (click)="showSaved.set(false)">
+    <div class="modal-box mc-modal-480" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">🔖 Saved Messages</span>
+        <button type="button" class="modal-x" (click)="showSaved.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (savedLoading()) {
+          <div class="mc-sched-empty">Loading…</div>
+        } @else if (savedMessages().length === 0) {
+          <div class="mc-sched-empty">No saved messages yet. Use the 🔖 on any message to bookmark it.</div>
+        } @else {
+          <div class="mc-sched-list">
+            @for (sm of savedMessages(); track sm._id) {
+              <div class="mc-saved-item">
+                <div class="mc-flex-1 mc-saved-click"
+                     (click)="jumpToMessage(sm.chatRoomId?._id ?? sm.chatRoomId, sm.messageId?._id ?? sm.messageId)">
+                  <div class="mc-saved-meta">
+                    <span class="mc-saved-sender">{{ sm.messageId?.senderId?.username ?? 'Unknown' }}</span>
+                    @if (sm.chatRoomId?.name) {
+                      <span class="mc-saved-room">in {{ sm.chatRoomId.name }}</span>
+                    }
+                  </div>
+                  <div class="mc-text-13">{{ sm.messageId?.content ?? '(message unavailable)' }}</div>
+                </div>
+                <button type="button" class="btn-ghost mc-btn-del" (click)="unsave(sm)">Remove</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ MENTIONS INBOX MODAL ══════════════════════════════════ -->
+@if (showMentions()) {
+  <div class="modal-overlay" (click)="showMentions.set(false)">
+    <div class="modal-box mc-modal-480" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-ttl">＠ Mentions</span>
+        <button type="button" class="modal-x" (click)="showMentions.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (mentionsLoading()) {
+          <div class="mc-sched-empty">Loading…</div>
+        } @else if (mentions().length === 0) {
+          <div class="mc-sched-empty">No one has mentioned you yet.</div>
+        } @else {
+          <div class="mc-sched-list">
+            @for (mn of mentions(); track mn._id) {
+              <div class="mc-saved-item mc-saved-click"
+                   (click)="jumpToMessage(mn.chatRoomId?._id ?? mn.chatRoomId, mn._id)">
+                <div class="mc-flex-1">
+                  <div class="mc-saved-meta">
+                    <span class="mc-saved-sender">{{ mn.senderId?.username ?? 'Unknown' }}</span>
+                    @if (mn.chatRoomId?.name) {
+                      <span class="mc-saved-room">in {{ mn.chatRoomId.name }}</span>
+                    }
+                    <span class="mc-saved-time">{{ mn.createdAt | date:'short' }}</span>
+                  </div>
+                  <div class="mc-text-13">{{ mn.content }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

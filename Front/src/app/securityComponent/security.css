@@ -1,0 +1,153 @@
+/* ── Layout stack ─────────────────────────────────────── */
+.account-stack {
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+}
+
+.card-spacing { margin-bottom: 0; }
+
+/* ── Session list ─────────────────────────────────────── */
+.session-stack {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  margin-top: .5rem;
+}
+
+.sec-session-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .65rem .85rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  transition: background .15s;
+}
+.sec-session-row:hover { background: var(--bg-hover); }
+
+.sess-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.sess-info { flex: 1; min-width: 0; }
+
+.sess-device {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+}
+
+.sess-meta {
+  font-size: .72rem;
+  color: var(--text-2);
+  display: block;
+  margin-top: .1rem;
+}
+
+.current-badge {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Alert messages ───────────────────────────────────── */
+.alert-success {
+  font-size: .82rem;
+  font-weight: 600;
+  padding: .6rem .9rem;
+  border-radius: var(--r-md);
+  background: var(--green-soft);
+  color: var(--green);
+  border: 1px solid rgba(34,197,94,.2);
+}
+
+.alert-error {
+  font-size: .82rem;
+  font-weight: 600;
+  padding: .6rem .9rem;
+  border-radius: var(--r-md);
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid rgba(239,68,68,.2);
+}
+
+/* ── Field error ──────────────────────────────────────── */
+.field-error {
+  font-size: .73rem;
+  color: var(--red);
+  margin-top: .2rem;
+}
+
+/* ── Btn ghost small ──────────────────────────────────── */
+.btn-ghost-small {
+  font-size: .78rem;
+  padding: .3rem .7rem;
+  white-space: nowrap;
+}
+
+/* ── Danger zone ──────────────────────────────────────── */
+.danger-card {
+  border-color: rgba(239,68,68,.3) !important;
+}
+
+.danger-title {
+  color: var(--red) !important;
+}
+
+.btn-danger {
+  padding: .52rem 1.1rem;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background .15s;
+  margin-top: .75rem;
+}
+.btn-danger:hover { background: var(--red); }
+.btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+
+.delete-confirm {
+  margin-top: .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+
+.delete-warn {
+  font-size: .82rem;
+  color: var(--text-2);
+  line-height: 1.55;
+  margin: 0;
+  padding: .65rem .85rem;
+  background: var(--red-soft);
+  border: 1px solid rgba(239,68,68,.15);
+  border-radius: var(--r-md);
+}
+
+.delete-actions {
+  display: flex;
+  gap: .65rem;
+}
+
+/* extracted inline styles */
+.text-disabled   { font-size: 0.8rem; color: #6b7280; }
+.btn-danger-link { color: #ef4444; }
+.otp-form  { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: flex-start; }
+.otp-input { max-width: 160px; text-align: center; font-weight: 700; letter-spacing: 0.15em; }

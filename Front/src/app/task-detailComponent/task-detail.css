@@ -1,0 +1,68 @@
+/* ══ Task Detail — extracted inline styles ══════════════════ */
+.td-loading      { text-align: center; padding: 4rem 0; color: var(--text-2); }
+.td-alert        { margin: 2rem 0; }
+
+.td-meta-inline  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.td-assignee-select { font-size: 12px; padding: 3px 6px; min-width: 140px; }
+.td-sprint-select   { font-size: 12px; padding: 3px 6px; min-width: 160px; }
+.td-btn-xs       { font-size: 11px; padding: 2px 8px; }
+.td-due-edit     { display: flex; align-items: center; gap: 6px; }
+.td-date-input   { padding: 3px 8px; border-radius: 5px; border: 1px solid var(--color-border-secondary);
+                   background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 12px; }
+.td-btn-save     { font-size: 11px; padding: 3px 10px; }
+.td-btn-cancel   { font-size: 11px; padding: 3px 8px; }
+.td-due-val      { cursor: pointer; text-decoration: underline dotted; }
+
+.td-labels       { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.td-label        { font-size: 11px; padding: 2px 8px; border-radius: 4px;
+                   background: var(--color-background-secondary); color: var(--color-text-secondary);
+                   border: 1px solid var(--color-border-tertiary); }
+
+.td-count        { font-size: 12px; font-weight: 400; color: var(--color-text-secondary); margin-left: 6px; }
+.td-loading-sm   { color: var(--color-text-secondary); font-size: 13px; padding: 8px 0; }
+.td-loading-xs   { color: var(--color-text-secondary); font-size: 13px; padding: 4px 0; }
+.td-empty-xs     { color: var(--color-text-tertiary); font-size: 12px; padding: 4px 0; }
+
+.td-comments-list  { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.td-comment-row    { display: flex; gap: 10px; align-items: flex-start; }
+.td-comment-av     { font-size: 11px; flex-shrink: 0; }
+.td-comment-main   { flex: 1; min-width: 0; }
+.td-comment-head   { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.td-comment-author { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.td-comment-time   { font-size: 11px; color: var(--color-text-tertiary); }
+.td-opacity-7      { opacity: .7; }
+.td-comment-edit   { display: flex; flex-direction: column; gap: 6px; }
+.td-comment-textarea { width: 100%; resize: vertical; border-radius: 6px; border: 1px solid var(--color-border-secondary);
+                   background: var(--color-background-secondary); color: var(--color-text-primary);
+                   padding: 6px 8px; font-size: 12px; box-sizing: border-box; font-family: inherit; }
+.td-edit-actions   { display: flex; gap: 6px; }
+.td-fs-11          { font-size: 11px; }
+.td-fs-12          { font-size: 12px; }
+.td-comment-text   { font-size: 13px; color: var(--color-text-secondary); margin: 0;
+                     white-space: pre-wrap; word-break: break-word; }
+
+.td-comment-form   { display: flex; flex-direction: column; gap: 8px; }
+.td-add-textarea   { width: 100%; resize: vertical; border-radius: 6px; border: 1px solid var(--color-border-secondary);
+                   background: var(--color-background-secondary); color: var(--color-text-primary);
+                   padding: 8px 10px; font-size: 13px; box-sizing: border-box; font-family: inherit; }
+.td-form-actions   { display: flex; justify-content: flex-end; }
+.td-btn-md         { font-size: 12px; padding: 6px 14px; }
+
+.td-card-title-flex { display: flex; align-items: center; gap: 8px; }
+.td-spacer         { flex: 1; }
+.td-dep-list       { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.td-dep-row        { display: flex; align-items: center; gap: 8px; }
+.td-blocker-chip   { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(239,68,68,.12); color: #ef4444; }
+.td-dep-title      { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+.td-add-row        { display: flex; gap: 8px; align-items: center; }
+.td-add-select     { flex: 1; font-size: 13px; }
+.td-btn-add        { font-size: 12px; padding: 5px 14px; white-space: nowrap; }
+
+.td-sub-list       { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.td-sub-dot        { width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+                     background: var(--color-border-secondary); flex-shrink: 0; }
+.td-sub-link       { font-size: 13px; color: var(--color-text-primary); text-decoration: none; flex: 1;
+                     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-sub-status     { font-size: 10px; padding: 1px 6px; border-radius: 4px;
+                     background: var(--color-background-secondary); color: var(--color-text-tertiary); }
+.td-sub-add        { display: flex; gap: 8px; }

@@ -1,0 +1,148 @@
+<div class="page">
+  <div class="page-header cal-header">
+    <div>
+      <h1 class="page-title">Calendar</h1>
+      <p class="page-sub">Tasks and meetings across your organisation</p>
+    </div>
+    <!-- Legend -->
+    <div class="cal-legend">
+      <span class="cal-legend-item">
+        <span class="cal-legend-dot cal-legend-meeting"></span>Task
+      </span>
+      <span class="cal-legend-item">
+        <span class="cal-legend-dot cal-legend-reminder"></span>Meeting
+      </span>
+    </div>
+  </div>
+
+  <div class="cal-layout">
+
+    <!-- Calendar grid -->
+    <div class="card cal-grid-card">
+      <!-- Month nav -->
+      <div class="cal-nav">
+        <button type="button" class="btn-ghost cal-nav-btn" (click)="prevMonth()">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
+          </svg>
+        </button>
+        <span class="cal-month-label">
+          {{ monthLabel() }}
+        </span>
+        <button type="button" class="btn-ghost cal-nav-btn" (click)="nextMonth()">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Day-of-week headers -->
+      <div class="cal-dow-row">
+        @for (d of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; track d) {
+          <div class="cal-dow">
+            {{ d }}
+          </div>
+        }
+      </div>
+
+      <!-- Days grid -->
+      <div class="cal-days-grid">
+        @for (day of calendarDays(); track $index) {
+          @if (day) {
+            @let evts = getEventsForDay(day);
+            <div
+              class="cal-cell"
+              [style.background]="isSelected(day) ? 'var(--indigo-soft)' : isToday(day) ? 'var(--indigo-soft)' : 'transparent'"
+              [style.border-color]="isSelected(day) ? 'var(--indigo)' : isToday(day) ? 'var(--border-glow)' : 'transparent'"
+              (click)="selectDay(day)">
+              <div class="cal-cell-num"
+                [style.color]="isToday(day) ? 'var(--indigo)' : 'var(--text-2)'">
+                {{ day.getDate() }}
+              </div>
+              <div class="cal-cell-events">
+                @for (ev of evts.slice(0,3); track ev.id) {
+                  <div class="cal-cell-event"
+                    [style.background]="ev.color">
+                    {{ ev.title }}
+                  </div>
+                }
+                @if (evts.length > 3) {
+                  <div class="cal-cell-more">+{{ evts.length - 3 }} more</div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="cal-cell-empty"></div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Selected day panel -->
+    <div class="cal-side">
+      @if (selectedDay(); as day) {
+        <div class="card cal-side-card">
+          <div class="cal-side-title">
+            {{ day.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }) }}
+          </div>
+
+          @if (selectedEvents().length === 0) {
+            <div class="cal-empty">
+              No events this day
+            </div>
+          }
+
+          <div class="cal-events-list">
+            @for (ev of selectedEvents(); track ev.id) {
+              <a [routerLink]="ev.route"
+                 class="cal-event-link"
+                 [style.border-left]="'3px solid ' + ev.color">
+                <div class="cal-event-body">
+                  <div class="cal-event-title">{{ ev.title }}</div>
+                  <div class="cal-event-meta">
+                    <span class="cal-event-type"
+                      [style.background]="ev.color">
+                      {{ ev.type }}
+                    </span>
+                    @if (ev.status) {
+                      <span class="cal-event-status">{{ ev.status }}</span>
+                    }
+                  </div>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="card cal-empty-card">
+          <div class="cal-empty-icon">📅</div>
+          <div class="cal-empty-text">Click a day to see events</div>
+        </div>
+      }
+
+      <!-- Upcoming events mini list -->
+      <div class="card cal-upcoming-card">
+        <div class="cal-upcoming-title">
+          Upcoming
+        </div>
+        <div class="cal-upcoming-list">
+          @for (ev of allEvents()
+            | slice:0:100
+            ; track ev.id) {
+            @if (ev.date >= calendarDate() && ev.date.getMonth() === calendarMonth()) {
+              <div class="cal-upcoming-row">
+                <span class="cal-upcoming-dot"
+                  [style.background]="ev.color"></span>
+                <span class="cal-upcoming-name">{{ ev.title }}</span>
+                <span class="cal-upcoming-date">
+                  {{ ev.date.getDate() }}
+                </span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

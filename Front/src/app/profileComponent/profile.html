@@ -1,0 +1,249 @@
+<div class="page">
+
+  <!-- ── Profile header banner ── -->
+  <div class="profile-banner">
+    <div class="banner-bg"></div>
+    <div class="banner-body">
+      <div class="banner-avatar">
+        @if (avatarUrl) {
+          <img [src]="avatarUrl" alt="Profile photo" class="av av-96 profile-avatar-img" />
+        } @else {
+          <div class="av av-96 av1">{{ userInitial }}</div>
+        }
+        <input #photoInput type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+        <button class="avatar-edit" [disabled]="uploadingImage()" (click)="photoInput.click()"
+                [title]="avatarUrl ? 'Change photo' : 'Upload photo'">
+          {{ uploadingImage() ? '…' : '✎' }}
+        </button>
+      </div>
+
+      <div class="banner-meta">
+        <h1 class="banner-name">{{ user()?.fullName }}</h1>
+        <div class="banner-sub">
+          <span class="badge badge-indigo">{{ getRoleLabel() }}</span>
+          @if (orgName()) {
+            <span class="banner-org">🏢 {{ orgName() }}</span>
+          }
+          @if (joinedAt()) {
+            <span class="banner-joined">Joined {{ joinedAt() | date:'mediumDate' }}</span>
+          }
+        </div>
+        <span class="banner-email">{{ user()?.email }}</span>
+      </div>
+
+      <div class="banner-actions">
+        <span class="badge badge-green">● Online</span>
+      </div>
+    </div>
+    @if (imageError()) { <p class="field-error banner-img-err">{{ imageError() }}</p> }
+    @if (successMsg()) { <p class="profile-success-msg banner-success">{{ successMsg() }}</p> }
+  </div>
+
+  <!-- ── Activity summary stat strip ── -->
+  @if (stats(); as s) {
+    <div class="stat-strip">
+      <div class="stat-card">
+        <span class="stat-num">{{ s.totalAssignedTasks }}</span>
+        <span class="stat-lbl">Assigned tasks</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num stat-blue">{{ s.inProgressTasks }}</span>
+        <span class="stat-lbl">In progress</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num stat-green">{{ s.doneTasks }}</span>
+        <span class="stat-lbl">Completed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" [class.stat-red]="s.overdueTasks > 0">{{ s.overdueTasks }}</span>
+        <span class="stat-lbl">Overdue</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">{{ s.totalTeams }}</span>
+        <span class="stat-lbl">Teams</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">{{ s.totalManagedProjects }}</span>
+        <span class="stat-lbl">Projects</span>
+      </div>
+      <div class="stat-card stat-ring-card">
+        <div class="ring" [style.--pct]="completionRate">
+          <span class="ring-val">{{ completionRate }}%</span>
+        </div>
+        <span class="stat-lbl">Completion</span>
+      </div>
+    </div>
+  }
+
+  <div class="profile-grid">
+
+    <!-- ── Left column ── -->
+    <div class="profile-col">
+
+      <!-- Personal Info -->
+      <div class="card card-spacing">
+        <div class="card-header">
+          <div class="card-title">Personal Information</div>
+          @if (!editing()) {
+            <button class="btn-ghost btn-ghost-small" (click)="editing.set(true)">Edit</button>
+          }
+        </div>
+
+        @if (!editing()) {
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-lbl">Full Name</span>
+              <span class="info-val">{{ user()?.fullName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Email</span>
+              <span class="info-val">{{ user()?.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Phone</span>
+              <span class="info-val">{{ phone() || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Gender</span>
+              <span class="info-val cap">{{ gender() || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Address</span>
+              <span class="info-val">{{ address() || '—' }}</span>
+            </div>
+          </div>
+        } @else {
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="edit-form">
+            <div class="form-field">
+              <label class="form-lbl">Full Name</label>
+              <input class="input" type="text" formControlName="fullName" placeholder="Your full name"/>
+              @if (editForm.get('fullName')?.touched && editForm.get('fullName')?.errors?.['required']) {
+                <p class="field-error">Name is required.</p>
+              }
+            </div>
+            <div class="form-field">
+              <label class="form-lbl">Email</label>
+              <input class="input" type="email" formControlName="email" placeholder="your@email.com" readonly/>
+              <p class="form-hint">Email changes are managed under Security.</p>
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="form-lbl">Phone</label>
+                <input class="input" type="tel" formControlName="phone" placeholder="Optional"/>
+              </div>
+              <div class="form-field">
+                <label class="form-lbl">Gender</label>
+                <select class="input" formControlName="gender">
+                  <option value="">Prefer not to say</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-lbl">Address</label>
+              <input class="input" type="text" formControlName="address" placeholder="Optional"/>
+            </div>
+            @if (errorMsg()) { <p class="field-error">{{ errorMsg() }}</p> }
+            <div class="edit-actions">
+              <button type="button" class="btn-ghost" (click)="editing.set(false)">Cancel</button>
+              <button type="submit" class="btn-primary" [disabled]="saving()">
+                {{ saving() ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+
+      <!-- Security -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Security</div></div>
+        <div class="sec-items">
+          <div class="sec-row">
+            <div>
+              <span class="sec-title">Password</span>
+              <span class="sec-sub">Update your account password</span>
+            </div>
+            <a routerLink="/dashboard/security" class="btn-ghost btn-ghost-small">Change</a>
+          </div>
+          <div class="sec-row">
+            <div>
+              <span class="sec-title">Two-Step Verification</span>
+              <span class="sec-sub">Manage two-factor authentication</span>
+            </div>
+            <a routerLink="/dashboard/security" class="btn-ghost btn-ghost-small">Manage</a>
+          </div>
+          <div class="sec-row">
+            <div>
+              <span class="sec-title">Active Sessions</span>
+              <span class="sec-sub">Review devices signed in to your account</span>
+            </div>
+            <a routerLink="/dashboard/security" class="btn-ghost btn-ghost-small">View</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right column ── -->
+    <div class="profile-col">
+
+      <!-- Role & Organization -->
+      <div class="card card-spacing">
+        <div class="card-header"><div class="card-title">Role &amp; Organization</div></div>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-lbl">Organization</span>
+            <span class="info-val">{{ orgName() || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-lbl">Role</span>
+            <span class="info-val"><span class="badge badge-indigo">{{ getRoleLabel() }}</span></span>
+          </div>
+          <div class="info-row">
+            <span class="info-lbl">Member since</span>
+            <span class="info-val">{{ joinedAt() ? (joinedAt() | date:'mediumDate') : '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teams -->
+      <div class="card card-spacing">
+        <div class="card-header">
+          <div class="card-title">My Teams</div>
+          <span class="count-pill">{{ teams().length }}</span>
+        </div>
+        @if (teams().length) {
+          <div class="chip-list">
+            @for (t of teams(); track t._id) {
+              <span class="chip">👥 {{ t.name }}</span>
+            }
+          </div>
+        } @else {
+          <p class="empty-note">You're not part of any team yet.</p>
+        }
+      </div>
+
+      <!-- Projects -->
+      <div class="card card-spacing">
+        <div class="card-header">
+          <div class="card-title">Managed Projects</div>
+          <span class="count-pill">{{ projects().length }}</span>
+        </div>
+        @if (projects().length) {
+          <div class="proj-list">
+            @for (p of projects(); track p._id) {
+              <div class="proj-row">
+                <span class="proj-name">{{ p.title }}</span>
+                <span class="status-dot status-{{ (p.status || 'active') | lowercase }}">{{ p.status || 'Active' }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-note">You don't manage any projects.</p>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>
