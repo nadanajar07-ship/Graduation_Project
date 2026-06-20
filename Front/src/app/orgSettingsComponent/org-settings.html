@@ -153,6 +153,55 @@
           }
         </div>
       }
+
+      <!-- Leave Organization Card -->
+      <div class="card os-card os-card-mt os-leave-card">
+        <h3 class="os-card-title">Leave Organization</h3>
+        @if (isOwner) {
+          <p class="os-hint os-hint-mt">
+            As the owner, you can't leave the organization directly. Transfer ownership
+            to another member first, or delete the organization from the Danger tab.
+          </p>
+          <button class="btn-ghost os-danger-btn-mt" disabled>
+            Leave Organization
+          </button>
+        } @else {
+          <p class="os-hint os-hint-mt">
+            You will lose access to all spaces, tasks, and chats in
+            <strong>{{ orgName() || 'this organization' }}</strong>. You can rejoin later
+            with an invitation or join code.
+          </p>
+
+          @if (leaveError()) {
+            <div class="os-alert os-alert-error mt-075">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374L9.4 4.626c.865-1.5 3.032-1.5 3.898 0l7.755 13.5Z" />
+              </svg>
+              {{ leaveError() }}
+            </div>
+          }
+
+          @if (!showLeaveOrg()) {
+            <button class="btn-danger os-danger-btn-mt" (click)="showLeaveOrg.set(true)">
+              Leave Organization
+            </button>
+          } @else {
+            <div class="os-delete-confirm">
+              <p class="os-delete-warn">
+                Are you sure you want to leave <strong>{{ orgName() || 'this organization' }}</strong>?
+              </p>
+              <div class="os-delete-actions">
+                <button class="btn-ghost" [disabled]="leaving()" (click)="showLeaveOrg.set(false)">
+                  Cancel
+                </button>
+                <button class="btn-danger" [disabled]="leaving()" (click)="leaveOrg()">
+                  @if (leaving()) { Leaving… } @else { Yes, Leave }
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
     </div>
   }
 

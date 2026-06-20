@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private router      = inject(Router);
   private route       = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private zone        = inject(NgZone);
 
   @ViewChild('googleBtn') googleBtnRef!: ElementRef;
 
@@ -111,22 +112,27 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.email.value,
       this.password.value
     );
-    this.isSubmitting = false;
 
-    if (result.success) {
-      this.navigateAfterLogin();
-    } else if (result.requiresOTP) {
-      this.requires2FA  = true;
-      this.pendingEmail = this.email.value;
-    } else {
-      if (result.message?.toLowerCase().includes('not confirmed')) {
+    // HttpClient is configured withFetch(), whose response can settle outside
+    // Angular's zone — leaving these state changes without change detection
+    // (stuck spinner, hidden error banner). Re-enter the zone so the view
+    // updates and any navigation runs inside Angular.
+    this.zone.run(() => {
+      this.isSubmitting = false;
+
+      if (result.success) {
+        this.navigateAfterLogin();
+      } else if (result.requiresOTP) {
+        this.requires2FA  = true;
+        this.pendingEmail = this.email.value;
+      } else if (result.message?.toLowerCase().includes('not confirmed')) {
         this.router.navigate(['/confirm-email'], {
           queryParams: { email: this.email.value }
         });
       } else {
         this.errorMessage = result.message;
       }
-    }
+    });
   }
 
   // ── 2FA OTP Verification ─────────────────────────────────
@@ -142,14 +148,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.pendingEmail,
       this.code.value
     );
-    this.isSubmitting = false;
 
-    if (result.success) {
-      this.navigateAfterLogin();
-    } else {
-      this.errorMessage = result.message;
-      this.otpForm.reset();
-    }
+    this.zone.run(() => {
+      this.isSubmitting = false;
+
+      if (result.success) {
+        this.navigateAfterLogin();
+      } else {
+        this.errorMessage = result.message;
+        this.otpForm.reset();
+      }
+    });
   }
 
   cancelOTP(): void {
@@ -220,13 +229,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
 
     const result = await this.authService.loginWithGoogle(idToken);
-    this.isSubmitting = false;
 
-    if (result.success) {
-      this.navigateAfterLogin();
-    } else {
-      this.errorMessage = result.message;
-    }
+    this.zone.run(() => {
+      this.isSubmitting = false;
+
+      if (result.success) {
+        this.navigateAfterLogin();
+      } else {
+        this.errorMessage = result.message;
+      }
+    });
   }
 
   loginWithGoogle(): void {}

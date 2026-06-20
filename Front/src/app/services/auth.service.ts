@@ -67,7 +67,15 @@ export class AuthService {
       await this.saveSession(res.data.accessToken, res.data.user);
       return { success: true, message: 'Login successful' };
     } catch (err: any) {
-      return { success: false, message: err?.error?.message || 'Invalid email or password' };
+      const backendMsg = err?.error?.message ?? '';
+      // Wrong email/password → backend returns 401 "Invalid credentials".
+      // Surface the required user-facing copy. Other messages (e.g.
+      // "Email not confirmed", provider conflicts, or the 429 lockout
+      // notice) pass through unchanged so their flows still work.
+      if (err?.status === 401 && /invalid credentials/i.test(backendMsg)) {
+        return { success: false, message: 'Incorrect email or password' };
+      }
+      return { success: false, message: backendMsg || 'Incorrect email or password' };
     }
   }
 

@@ -484,6 +484,28 @@ notificationEvent.on("sprint_started", async (payload) => {
   });
 });
 
+// ─────────────────────────────────────────────────────────────
+// ORGANIZATION LISTENERS
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Emitted by: invite.service → acceptInvitation
+ * Payload: { recipientIds, triggeredById, joinerName, orgName, orgId }
+ * Who gets it: every existing owner/admin of the org (except the joiner)
+ */
+notificationEvent.on("org_member_joined", async (payload) => {
+  const { recipientIds, triggeredById, joinerName, orgName, orgId } = payload;
+
+  await notifyMany(recipientIds, {
+    triggeredById,
+    type: "org_member_joined",
+    title: `${joinerName} joined "${orgName}"`,
+    body: null,
+    entityType: "Organization",
+    entityId: orgId,
+  });
+});
+
 /**
  * Emitted by: sprint.service → closeSprint
  * Payload: { memberIds, triggeredById, sprintName, sprintId }

@@ -11,6 +11,7 @@ import {
 } from '../services/chat.service';
 import { CallService }   from '../services/call.service';
 import { SocketService } from '../services/socket.service';
+import { ToastService }  from '../services/toast.service';
 
 const EMOJI_QUICK = ['👍', '❤️', '😂', '🎉', '😮', '😢'];
 
@@ -30,6 +31,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   private route        = inject(ActivatedRoute);
   callService          = inject(CallService);
   socketService        = inject(SocketService);
+  private toast        = inject(ToastService);
 
   // Deep-link intent (e.g. coming from a meeting "Join Call" button):
   //   /messages?room=<roomId>&call=video|voice
@@ -41,6 +43,8 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   selectedRoom    = signal<Conversation | null>(null);
   messages        = signal<BackendMessage[]>([]);
   messageText     = signal('');
+  pendingFiles    = signal<File[]>([]);
+  uploadingFiles  = signal(false);
   searchQuery     = signal('');
   loadingRooms    = signal(true);
   loadingMessages = signal(false);
@@ -200,6 +204,40 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  /** Human-readable file size (e.g. "1.2 MB"). */
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes <= 0) return '';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let i = 0;
+    let size = bytes;
+    while (size >= 1024 && i < units.length - 1) {
+      size /= 1024;
+      i++;
+    }
+    return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  }
+
+  /** Format a duration in seconds as m:ss. */
+  formatDuration(totalSeconds: number): string {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  /** Pick an emoji icon for a file attachment based on its name/mime type. */
+  fileIcon(att: { originalName?: string; mimeType?: string }): string {
+    const name = (att?.originalName ?? '').toLowerCase();
+    const mime = (att?.mimeType ?? '').toLowerCase();
+    if (mime.includes('pdf') || name.endsWith('.pdf')) return '📕';
+    if (mime.includes('zip') || /\.(zip|rar|7z|tar|gz)$/.test(name)) return '🗜️';
+    if (mime.includes('word') || /\.(docx?|odt)$/.test(name)) return '📘';
+    if (/\.(xlsx?|csv|ods)$/.test(name) || mime.includes('sheet')) return '📗';
+    if (/\.(pptx?|odp)$/.test(name) || mime.includes('presentation')) return '📙';
+    if (mime.startsWith('video/')) return '🎬';
+    if (mime.startsWith('audio/')) return '🎵';
+    return '📄';
+  }
+
   // ── Lifecycle ──────────────────────────────────────────
   ngOnInit() {
     // Honor a deep-link from elsewhere (e.g. a meeting's "Join Call" button).
@@ -317,7 +355,30 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   async sendMessage() {
     const text = this.messageText().trim();
     const room = this.selectedRoom();
-    if (!text || !room) return;
+    const files = this.pendingFiles();
+    if ((!text && files.length === 0) || !room) return;
+
+    // ── With attachments: upload via multipart ──────────────
+    if (files.length > 0) {
+      const messageType = files.every(f => f.type.startsWith('image/'))
+        ? 'image'
+        : files.every(f => f.type.startsWith('audio/'))
+          ? 'voice'
+          : 'file';
+      this.uploadingFiles.set(true);
+      try {
+        await this.chatService.sendMessageWithAttachments(room._id, text, files, messageType);
+        this.messageText.set('');
+        this.pendingFiles.set([]);
+        this.mentionMatches.set([]);
+        if (this.composerInput) this.composerInput.nativeElement.value = '';
+      } catch (err: any) {
+        this.toast.error(err?.error?.message || 'Failed to upload attachment');
+      } finally {
+        this.uploadingFiles.set(false);
+      }
+      return;
+    }
 
     this.messageText.set('');
     this.mentionMatches.set([]);
@@ -330,6 +391,110 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     // (with dedup) will display it. Adding here too creates a race where the
     // socket fires before this await returns, inserting the same message twice.
     await this.chatService.sendMessage(room._id, text);
+  }
+
+  /** Handle file selection from the composer's attach input. */
+  onAttachSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const picked = Array.from(input.files ?? []);
+    if (!picked.length) return;
+    // Backend caps at 5 attachments / 5 MB each.
+    const tooBig = picked.find(f => f.size > 5 * 1024 * 1024);
+    if (tooBig) {
+      this.toast.error(`"${tooBig.name}" exceeds the 5 MB limit`);
+      input.value = '';
+      return;
+    }
+    this.pendingFiles.update(list => [...list, ...picked].slice(0, 5));
+    input.value = ''; // allow re-selecting the same file
+  }
+
+  removePendingFile(index: number) {
+    this.pendingFiles.update(list => list.filter((_, i) => i !== index));
+  }
+
+  // ── Voice messages (MediaRecorder) ──────────────────────
+  isRecording      = signal(false);
+  recordingSeconds = signal(0);
+  private mediaRecorder?: MediaRecorder;
+  private mediaStream?: MediaStream;
+  private recordedChunks: Blob[] = [];
+  private recordTimer?: any;
+  private cancelRecord = false;
+
+  async startRecording() {
+    if (this.isRecording()) return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      this.toast.error('Voice recording is not supported in this browser');
+      return;
+    }
+    try {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      this.toast.error('Microphone access was denied');
+      return;
+    }
+    // Pick a mime type the browser supports (the backend now accepts webm/ogg/mp4).
+    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4'];
+    const mimeType = candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    this.recordedChunks = [];
+    this.cancelRecord = false;
+    this.mediaRecorder = new MediaRecorder(this.mediaStream, mimeType ? { mimeType } : undefined);
+    this.mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) this.recordedChunks.push(e.data); };
+    this.mediaRecorder.onstop = () => this.finishRecording(mimeType || 'audio/webm');
+    this.mediaRecorder.start();
+
+    this.isRecording.set(true);
+    this.recordingSeconds.set(0);
+    this.recordTimer = setInterval(() => {
+      this.recordingSeconds.update(s => s + 1);
+      if (this.recordingSeconds() >= 120) this.stopRecording(); // 2-min cap
+    }, 1000);
+  }
+
+  /** Stop and SEND the recording. */
+  stopRecording() {
+    if (!this.isRecording()) return;
+    this.cancelRecord = false;
+    this.teardownRecorder();
+  }
+
+  /** Stop and DISCARD the recording. */
+  cancelRecording() {
+    if (!this.isRecording()) return;
+    this.cancelRecord = true;
+    this.teardownRecorder();
+  }
+
+  private teardownRecorder() {
+    if (this.recordTimer) { clearInterval(this.recordTimer); this.recordTimer = undefined; }
+    try { this.mediaRecorder?.stop(); } catch { /* already stopped */ }
+    this.mediaStream?.getTracks().forEach(t => t.stop());
+    this.isRecording.set(false);
+  }
+
+  private async finishRecording(mimeType: string) {
+    const stream = this.mediaStream;
+    this.mediaStream = undefined;
+    this.mediaRecorder = undefined;
+    if (this.cancelRecord || this.recordedChunks.length === 0) {
+      this.recordedChunks = [];
+      return;
+    }
+    const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'm4a' : 'webm';
+    const blob = new Blob(this.recordedChunks, { type: mimeType.split(';')[0] || 'audio/webm' });
+    this.recordedChunks = [];
+    const room = this.selectedRoom();
+    if (!room || blob.size === 0) return;
+    const file = new File([blob], `voice-${Date.now()}.${ext}`, { type: blob.type });
+    this.uploadingFiles.set(true);
+    try {
+      await this.chatService.sendMessageWithAttachments(room._id, '', [file], 'voice');
+    } catch (err: any) {
+      this.toast.error(err?.error?.message || 'Failed to send voice message');
+    } finally {
+      this.uploadingFiles.set(false);
+    }
   }
 
   handleKeydown(e: KeyboardEvent) {

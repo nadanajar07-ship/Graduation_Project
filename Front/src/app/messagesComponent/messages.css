@@ -248,6 +248,38 @@
 .attach-dl-btn svg { width: 14px; height: 14px; }
 .attach-dl-btn:hover { background: var(--indigo); color: #fff; }
 
+/* Attachment wrapper (images / files / voice) */
+.attach-wrap { display: flex; flex-direction: column; gap: .4rem; max-width: 340px; }
+.attach-wrap.attach-own { align-items: flex-end; }
+
+/* Image thumbnail */
+.attach-image-link { display: inline-block; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); line-height: 0; max-width: 280px; }
+.attach-image-link:hover { border-color: var(--indigo); box-shadow: 0 4px 16px rgba(99,102,241,.12); }
+.attach-image { display: block; max-width: 280px; max-height: 320px; width: auto; height: auto; object-fit: cover; }
+
+/* File download card */
+.attach-file-card {
+  display: flex; align-items: center; gap: .65rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: .7rem .9rem;
+  min-width: 200px; max-width: 320px; text-decoration: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.attach-file-card:hover { border-color: var(--indigo); box-shadow: 0 4px 16px rgba(99,102,241,.10); }
+.attach-own .attach-file-card { background: var(--indigo-soft); border-color: rgba(99,102,241,.25); }
+.attach-file-icon { font-size: 1.5rem; flex-shrink: 0; }
+.attach-file-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.attach-file-name { font-size: .8rem; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attach-file-size { font-size: .7rem; color: var(--muted); }
+.attach-file-dl { font-size: 1rem; color: var(--muted); flex-shrink: 0; }
+.attach-file-card:hover .attach-file-dl { color: var(--indigo); }
+
+/* Voice / audio player */
+.attach-voice { width: 280px; max-width: 100%; }
+.attach-voice-audio { width: 100%; height: 40px; }
+
 /* Voice bubble */
 .voice-bubble {
   display: flex; align-items: center; gap: .6rem;
@@ -384,7 +416,7 @@
   transition: border-color .18s, background .15s;
 }
 .chat-input::placeholder { color: var(--muted); }
-.chat-input:focus { border-color: var(--indigo); background: #fff;
+.chat-input:focus { border-color: var(--indigo); background: var(--card);
   box-shadow: 0 0 0 3px var(--indigo-soft); }
 
 /* Override pages.css send-btn */
@@ -401,6 +433,58 @@
   background: var(--border); color: var(--muted);
   box-shadow: none; cursor: default;
 }
+
+/* Composer with attach support: stack pending row above the input row */
+.chat-input-bar { flex-direction: column; align-items: stretch; gap: .5rem; }
+.chat-input-inner { display: flex; align-items: center; gap: .45rem; }
+.attach-btn {
+  width: 36px; height: 36px; border: none; border-radius: 10px;
+  background: var(--bg); color: var(--muted); cursor: pointer; font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s;
+}
+.attach-btn:hover:not(:disabled) { background: var(--indigo-soft); color: var(--indigo); }
+.attach-btn:disabled { opacity: .45; cursor: default; }
+.attach-spinner { font-size: 1rem; }
+
+/* Pending attachments (before send) */
+.pending-attach-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pending-attach-chip {
+  display: flex; align-items: center; gap: .4rem;
+  background: var(--indigo-soft); border: 1px solid rgba(99,102,241,.25);
+  border-radius: 9px; padding: .35rem .55rem; max-width: 240px;
+}
+.pending-attach-icon { font-size: .95rem; flex-shrink: 0; }
+.pending-attach-name { font-size: .75rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pending-attach-size { font-size: .68rem; color: var(--muted); flex-shrink: 0; }
+.pending-attach-x {
+  border: none; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: .8rem; line-height: 1; padding: 0 2px; flex-shrink: 0;
+}
+.pending-attach-x:hover { color: var(--danger, #ef4444); }
+
+/* Voice recording mode */
+.rec-cancel-btn {
+  width: 36px; height: 36px; border: none; border-radius: 10px;
+  background: var(--bg); color: var(--muted); cursor: pointer; font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all .15s;
+}
+.rec-cancel-btn:hover { background: rgba(239,68,68,.12); color: var(--danger, #ef4444); }
+.rec-indicator {
+  flex: 1; display: flex; align-items: center; gap: .55rem;
+  padding: .6rem .9rem; background: var(--bg);
+  border: 1.5px solid rgba(239,68,68,.4); border-radius: 10px;
+}
+.rec-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--danger, #ef4444); flex-shrink: 0;
+  animation: rec-pulse 1.1s ease-in-out infinite;
+}
+@keyframes rec-pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+.rec-label { font-size: .82rem; color: var(--text); font-weight: 600; }
+.rec-time { font-size: .8rem; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
 
 /* ══ MODALS ═══════════════════════════════════════════════════ */
 .modal-overlay {

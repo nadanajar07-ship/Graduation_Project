@@ -95,8 +95,22 @@ const bootstrap = async (app, express) => {
     );
   }
 
-  // Body size limit (basic DoS protection)
-  app.use(express.json({ limit: "1mb" }));
+  // Body size limit (basic DoS protection). Screenshot uploads carry an
+  // inline base64 data-URI of a full-resolution desktop capture, which
+  // legitimately exceeds 1mb (especially on HiDPI/Retina displays). That
+  // one route opts out of the global 1mb cap here and applies its own
+  // larger limit in screenshot.controller.js — keeping the small cap on
+  // every other endpoint.
+  const jsonParser = express.json({ limit: "1mb" });
+  app.use((req, res, next) => {
+    if (
+      req.method === "POST" &&
+      /\/work-session\/[^/]+\/screenshots\/?$/.test(req.path)
+    ) {
+      return next();
+    }
+    return jsonParser(req, res, next);
+  });
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
   app.use("/auth", authLimiter);

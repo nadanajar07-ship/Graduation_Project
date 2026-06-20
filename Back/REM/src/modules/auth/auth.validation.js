@@ -24,7 +24,10 @@ export const login = joi
   .keys({
     email: generalFields.email,
     phone: generalFields.phone,
-    password: generalFields.password.required(),
+    // Login must not enforce the signup strong-password format. Doing so makes
+    // a wrong password fail validation (400) instead of reaching the
+    // credential check (401). Accept any non-empty string here.
+    password: joi.string().required(),
   })
   .xor("email", "phone")
   .required();

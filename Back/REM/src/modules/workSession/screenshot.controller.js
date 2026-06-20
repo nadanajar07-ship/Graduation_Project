@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, json } from "express";
 import joi from "joi";
 import screenshotModel from "../../DB/Model/screenshot.model.js";
 import workSessionModel from "../../DB/Model/worksession.model.js";
@@ -37,6 +37,10 @@ const uploadSchema = joi
 
 router.post(
   "/:sessionId/screenshots",
+  // Larger body limit than the global 1mb cap (which this route opts out
+  // of in app.controller.js): an inline base64 screenshot data-URI can be
+  // several MB on high-resolution displays.
+  json({ limit: "12mb" }),
   validation(uploadSchema),
   asyncHandler(async (req, res) => {
     const session = await workSessionModel.findById(req.params.sessionId);

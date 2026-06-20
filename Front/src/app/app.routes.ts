@@ -214,6 +214,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./aiAnalyticsComponent/ai-analytics').then((m) => m.AiAnalyticsComponent),
       },
+      {
+        path: 'ai-speech-analysis',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./aiSpeechAnalysisComponent/ai-speech-analysis').then(
+            (m) => m.AiSpeechAnalysisComponent,
+          ),
+      },
     ],
   },
   {

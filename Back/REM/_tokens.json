@@ -1,0 +1,32 @@
+{
+  "qaowner@example.com": {
+    "id": "6a315861c521f2517a92024e",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMzE1ODYxYzUyMWYyNTE3YTkyMDI0ZSIsImlhdCI6MTc4MTkxNDE0OSwiZXhwIjoxNzgxOTI0OTQ5fQ.IoSBeu5tj6334AvFf6QuoowCh98PazFmq8rLpbKg-e4",
+    "orgs": [
+      {
+        "org": "6a31589ec71506b177c01542",
+        "role": "owner"
+      }
+    ]
+  },
+  "qamember@example.com": {
+    "id": "6a315862c521f2517a920253",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMzE1ODYyYzUyMWYyNTE3YTkyMDI1MyIsImlhdCI6MTc4MTkxNDE0OSwiZXhwIjoxNzgxOTI0OTQ5fQ.RkYoy4iSlhpcChZePwzYEbSoi8XkkQFi1eS7rpyiguc",
+    "orgs": [
+      {
+        "org": "6a31589ec71506b177c01542",
+        "role": "admin"
+      }
+    ]
+  },
+  "qaviewer@example.com": {
+    "id": "6a31599c4ef7f875d02dc1c6",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMzE1OTljNGVmN2Y4NzVkMDJkYzFjNiIsImlhdCI6MTc4MTkxNDE0OSwiZXhwIjoxNzgxOTI0OTQ5fQ.7_isqb_b9k4APwp9F5HswcR-BXw97t71K4ADZ-Nt2rw",
+    "orgs": [
+      {
+        "org": "6a31589ec71506b177c01542",
+        "role": "member"
+      }
+    ]
+  }
+}

@@ -243,6 +243,39 @@
   color: var(--clr-accent);
 }
 
+/* ── Account switch ─────────────────────────────────────────────── */
+.account-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--clr-border);
+  font-size: 0.82rem;
+}
+
+.account-switch-text {
+  color: var(--clr-muted);
+}
+
+.account-switch-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  transition: opacity 0.15s;
+}
+
+.account-switch-btn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 /* ── Form stack ─────────────────────────────────────────────────── */
 .form-stack {
   display: flex;

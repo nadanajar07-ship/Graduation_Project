@@ -12,7 +12,15 @@ export interface BackendMessage {
   senderId:    { _id: string; username: string; image?: any };
   content:     string;
   messageType: MsgType;
-  attachments?: { url: string; originalName: string; mimeType?: string }[];
+  attachments?: {
+    type?: 'image' | 'voice' | 'file' | 'video';
+    url: string;
+    public_id?: string;
+    originalName: string;
+    mimeType?: string;
+    size?: number;
+    duration?: number;
+  }[];
   replyTo?:    string | BackendMessage;
   createdAt:   string;
   edited?:     boolean;
@@ -214,6 +222,39 @@ export class ChatService {
     } catch (err: any) {
       console.error('[ChatService] sendMessage:', err?.error?.message);
       return null;
+    }
+  }
+
+  /**
+   * Send a message with file attachments (multipart/form-data).
+   * The backend route uses multer `.array("attachments", 5)` and derives the
+   * per-attachment type from the mime type. We set the message-level
+   * `messageType` so the UI knows which renderer to use.
+   */
+  async sendMessageWithAttachments(
+    roomId:      string,
+    content:     string,
+    files:       File[],
+    messageType: MsgType = 'file',
+    replyTo?:    string,
+  ): Promise<BackendMessage | null> {
+    try {
+      const fd = new FormData();
+      fd.append('content', content ?? '');
+      fd.append('messageType', messageType);
+      if (replyTo) fd.append('replyTo', replyTo);
+      for (const f of files) fd.append('attachments', f, f.name);
+
+      const res = await firstValueFrom(
+        this.http.post<{ data: any }>(
+          `${BASE}/chat/rooms/${roomId}/messages`,
+          fd
+        )
+      );
+      return res?.data?.message ?? null;
+    } catch (err: any) {
+      console.error('[ChatService] sendMessageWithAttachments:', err?.error?.message || err?.message);
+      throw err;
     }
   }
 
@@ -522,7 +563,8 @@ export class ChatService {
           `${BASE}/chat/rooms/${roomId}/messages/${messageId}/thread`
         )
       );
-      return res?.data?.messages ?? res?.data ?? [];
+      // Backend returns { data: { parent, replyCount, replies } }.
+      return res?.data?.replies ?? res?.data?.messages ?? [];
     } catch {
       return [];
     }

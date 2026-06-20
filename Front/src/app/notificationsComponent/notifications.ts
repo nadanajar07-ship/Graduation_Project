@@ -117,11 +117,13 @@ export class NotificationsComponent implements OnInit {
   }
 
   getIcon(type: string): string {
-    if (type.includes('comment')) return 'comment';
+    if (type.includes('comment') || type.includes('message')) return 'comment';
     if (type.includes('task')) return 'task';
     if (type.includes('sprint')) return 'sprint';
+    if (type.includes('meeting')) return 'meeting';
+    if (type.includes('reminder')) return 'reminder';
     if (type.includes('project')) return 'project';
-    if (type.includes('team')) return 'team';
+    if (type.includes('team') || type.includes('member')) return 'team';
     return 'default';
   }
 }

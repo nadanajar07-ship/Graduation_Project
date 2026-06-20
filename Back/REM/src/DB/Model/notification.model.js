@@ -25,6 +25,20 @@ export const notificationTypes = {
   // Sprints
   SPRINT_STARTED: "sprint_started",
   SPRINT_CLOSED: "sprint_closed",
+
+  // Chat
+  MESSAGE_MENTION: "message_mention",   // you were @mentioned in a chat message
+
+  // Meetings (calendar pings)
+  MEETING_INVITED: "meeting_invited",
+  MEETING_STARTING_SOON: "meeting_starting_soon",
+  MEETING_CANCELLED: "meeting_cancelled",
+
+  // Reminders
+  REMINDER_DUE: "reminder_due",
+
+  // Organization
+  ORG_MEMBER_JOINED: "org_member_joined", // a new member accepted an org invite
 };
 
 const notificationSchema = new Schema(

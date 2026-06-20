@@ -70,6 +70,7 @@ export class SocketService {
       if (!notif) return;
       this.unreadCount.update(c => c + 1);
       this.lastNotif.set(notif);
+      this.audio.playNotification();
       this.toast.info(notif.title ?? 'New notification');
     });
 
@@ -134,6 +135,19 @@ export class SocketService {
     this.callSocket.on('call:initiated', (data: any) => {
       this.activeCall.set({ callId: data.callId, roomId: data.roomId });
       this.call.joinCall(data.roomId, data.callId);
+    });
+
+    // Our initiate hit a room that already has a ringing/active call.
+    // Backend replies 'call:busy' INSTEAD of 'call:initiated', so without
+    // this handler the outgoing-call UI would hang forever. Clear state +
+    // tell the user.
+    this.callSocket.on('call:busy', (data: any) => {
+      this.activeCall.set(null);
+      this.incomingCall.set(null);
+      this.audio.stopRingtone();
+      const msg = data?.message || 'There is already an active call in this room.';
+      this.call.callError.set(msg);
+      this.toast.info(`📞 ${msg}`);
     });
 
     // Call ended remotely

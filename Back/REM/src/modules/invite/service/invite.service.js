@@ -17,6 +17,7 @@ import { asyncHandler } from "../../../utils/response/error.response.js";
 import { successResponse } from "../../../utils/response/success.response.js";
 import { syncOrgChatOnMemberChange } from "../../chatroom/service/chat.sync.service.js";
 import { httpError } from "../../../utils/errors/index.js";
+import { notificationEvent } from "../../../utils/events/notification.event.js";
 
 const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
@@ -193,6 +194,36 @@ export const acceptInvitation = asyncHandler(async (req, res, next) => {
   if (["owner", "admin"].includes(membership.role)) {
     syncOrgChatOnMemberChange(org._id, { promoteUserId: req.user._id });
   }
+
+  // Notify existing owners/admins that a new member joined. Fire-and-forget
+  // (createNotification skips self, so the joiner never notifies themselves
+  // even if they happen to be an admin reactivating).
+  (async () => {
+    try {
+      const admins = await dbService.find({
+        model: memberModel,
+        filter: {
+          organizationId: org._id,
+          isActive: true,
+          role: { $in: ["owner", "admin"] },
+          userId: { $ne: req.user._id },
+        },
+        select: "userId",
+      });
+      const recipientIds = admins.map((m) => String(m.userId));
+      if (recipientIds.length) {
+        notificationEvent.emit("org_member_joined", {
+          recipientIds,
+          triggeredById: req.user._id,
+          joinerName: req.user.username,
+          orgName: org.name,
+          orgId: org._id,
+        });
+      }
+    } catch {
+      /* notification failure must never break invite acceptance */
+    }
+  })();
 
   return successResponse({
     res,

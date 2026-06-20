@@ -49,12 +49,18 @@ function userKey(req) {
   return req.user?._id ? `u:${req.user._id}` : `ip:${req.ip}`;
 }
 
+// Global rate limit — security hardening requirement:
+//   max 100 requests per IP, per 5-minute window, respond 429.
+// Keyed strictly by IP (not user) so the cap applies to the client
+// host regardless of authentication state. The handler raises a
+// TooManyRequestsError, which the global error handler renders as
+// HTTP 429.
 export const generalLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000,
-  limit: 200,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 100, // 100 requests per IP per window
   standardHeaders: "draft-8",
   store: buildStore("general"),
-  keyGenerator: userKey,
+  keyGenerator: (req) => `ip:${req.ip}`,
   handler: (req, res, next) =>
     next(new TooManyRequestsError("Too many requests, please try again later")),
 });

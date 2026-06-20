@@ -8,7 +8,24 @@ export const fileValidations = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ],
   video: ["video/mp4", "video/mpeg", "video/quicktime"],
-  audio: ["audio/mpeg", "audio/wav"],
+  // Browser MediaRecorder emits webm/ogg (Opus); native recorders emit
+  // mp3/wav/m4a. Accept all so voice messages work cross-browser.
+  audio: [
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+    "audio/ogg",
+    "audio/mp4",
+    "audio/x-m4a",
+    "audio/aac",
+  ],
+  // Archives — zip + common variants browsers/OSes report.
+  archive: [
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/x-zip",
+    "multipart/x-zip",
+  ],
 };
 
 export const uploadCloudFile = (fileValidation = []) => {
@@ -18,12 +35,14 @@ export const uploadCloudFile = (fileValidation = []) => {
     if (fileValidation.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(
-        new Error(
-          `Invalid file type. Allowed types: ${fileValidation.join(", ")}`,
-        ),
-        false,
+      // 400 (client error) — not a 500. Flag exposes the message to the
+      // client via the global error handler's explicit-4xx branch.
+      const err = new Error(
+        `Invalid file type "${file.mimetype}". Allowed types: ${fileValidation.join(", ")}`,
       );
+      err.statusCode = 400;
+      err.expose = true;
+      cb(err, false);
     }
   }
 

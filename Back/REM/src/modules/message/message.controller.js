@@ -18,6 +18,7 @@ const uploadAny = uploadCloudFile([
   ...fileValidations.document,
   ...fileValidations.video,
   ...fileValidations.audio,
+  ...fileValidations.archive,
 ]);
 
 // ── Send ──────────────────────────────────────────────────────

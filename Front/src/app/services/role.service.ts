@@ -134,6 +134,25 @@ export class RoleService {
     }
   }
 
+  async leaveOrganization(
+    orgId?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const resolvedOrgId = orgId || this.auth.currentUser()?.orgId;
+    if (!resolvedOrgId) return { success: false, message: 'No org selected' };
+
+    try {
+      await firstValueFrom(
+        this.http.delete(`${BASE}/org/${resolvedOrgId}/leave`),
+      );
+      return { success: true, message: 'You have left the organization' };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err?.error?.message || 'Failed to leave organization',
+      };
+    }
+  }
+
   async inviteMember(
     email: string,
     role: Role,

@@ -42,7 +42,10 @@ export const generalFields = {
   email: joi.string().email({
     minDomainSegments: 2,
     maxDomainSegments: 3,
-    tlds: { allow: ["com", "net"] },
+    // Do not restrict the TLD allow-list — the previous ["com","net"] list
+    // rejected legitimate addresses (e.g. the app's own @rem.io accounts),
+    // so real users failed validation (400) before the credential check.
+    tlds: false,
   }),
   password: joi
     .string()

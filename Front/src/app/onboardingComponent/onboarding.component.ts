@@ -74,6 +74,11 @@ export class OnboardingComponent {
     }
   }
 
+  signInWithAnotherAccount() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
   onOrgNameInput(event: Event) {
     const val = (event.target as HTMLInputElement).value;
     let generated = val.toLowerCase().trim()

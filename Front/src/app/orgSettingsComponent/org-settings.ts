@@ -30,6 +30,9 @@ export class OrgSettingsComponent implements OnInit {
   inviteSuccess  = signal('');
   inviteError    = signal('');
   joinCodeCopied = signal(false);
+  showLeaveOrg   = signal(false);
+  leaving        = signal(false);
+  leaveError     = signal('');
 
   members        = this.roleService.members;
   loadingMembers = this.roleService.loading;
@@ -170,6 +173,21 @@ export class OrgSettingsComponent implements OnInit {
     const result = await this.roleService.updateMemberRole(memberUserId, role, this.orgId);
     if (!result.success) {
       console.error('[OrgSettings] updateRole:', result.message);
+    }
+  }
+
+  // ── Leave Org ───────────────────────────────────────────
+  async leaveOrg() {
+    if (this.isOwner || !this.orgId) return;
+    this.leaving.set(true);
+    this.leaveError.set('');
+    const result = await this.roleService.leaveOrganization(this.orgId);
+    this.leaving.set(false);
+    if (result.success) {
+      this.auth.clearOrgId();
+      this.router.navigate(['/onboarding']);
+    } else {
+      this.leaveError.set(result.message);
     }
   }
 

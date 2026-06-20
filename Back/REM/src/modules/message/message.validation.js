@@ -14,7 +14,15 @@ export const sendMessage = joi
       .valid("text", "image", "voice", "file", "system")
       .default("text"),
     replyTo: optionalId,
-    file: joi.object().unknown(true),
+    // The send route uses multer `.array("attachments", 5)`, so the
+    // validation middleware injects `req.files` (an ARRAY) as `file`.
+    // Accept both a single object (`.single`) and an array of file objects
+    // — declaring only `joi.object()` rejected every multi-file upload
+    // with "file must be of type object", breaking ALL chat attachments.
+    file: joi.alternatives().try(
+      joi.object().unknown(true),
+      joi.array().items(joi.object().unknown(true)),
+    ),
   })
   .required();
 

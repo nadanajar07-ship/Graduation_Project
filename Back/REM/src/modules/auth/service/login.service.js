@@ -31,10 +31,16 @@ import { httpError } from "../../../utils/errors/index.js";
 import { detectGeoRisk } from "../../../utils/security/geo-risk.service.js";
 
 // ─── Brute-force lockout constants ──────────────────────────
-// 5 failed attempts → 15-minute lockout. These match common SaaS
-// defaults (Google, GitHub). Tune via env if needed.
+// Security hardening: 5 failed attempts within a 5-minute rolling
+// window → 5-minute temporary lockout. Tunable via env if needed.
 const LOGIN_MAX_ATTEMPTS = Number(process.env.LOGIN_MAX_ATTEMPTS || 5);
-const LOGIN_LOCKOUT_MS = Number(process.env.LOGIN_LOCKOUT_MS || 15 * 60 * 1000);
+const LOGIN_LOCKOUT_MS = Number(process.env.LOGIN_LOCKOUT_MS || 5 * 60 * 1000);
+const LOGIN_ATTEMPT_WINDOW_MS = Number(
+  process.env.LOGIN_ATTEMPT_WINDOW_MS || 5 * 60 * 1000,
+);
+// Exact message surfaced to clients when an account is locked.
+const LOGIN_LOCKED_MESSAGE =
+  "Account temporarily locked. Try again in 5 minutes.";
 
 const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
@@ -184,24 +190,31 @@ export const login = asyncHandler(async (req, res, next) => {
       (user.loginLockedUntil.getTime() - Date.now()) / 1000,
     );
     res.setHeader("Retry-After", retryAfterSec);
-    return next(
-      httpError(
-        429,
-        `Account temporarily locked due to repeated failed attempts. Try again in ${retryAfterSec} seconds.`,
-      ),
-    );
+    return next(httpError(429, LOGIN_LOCKED_MESSAGE));
   }
 
   if (!compareHash({ plainText: password, hashValue: user.password })) {
-    // Track the failure. If we've crossed the threshold, lock the
-    // account and audit it as a distinct event so dashboards can
-    // distinguish "many bad attempts" from a one-off typo.
-    const nextCount = (user.loginFailedAttempts || 0) + 1;
-    const update = { loginFailedAttempts: nextCount };
+    // Track the failure inside a rolling 5-minute window. If the
+    // previous window has lapsed (or never started), restart the
+    // counter; otherwise increment within the active window. Once we
+    // cross the threshold, lock the account for 5 minutes and audit it
+    // as a distinct event so dashboards can distinguish "many bad
+    // attempts" from a one-off typo.
+    const now = Date.now();
+    const windowStart = user.loginFailedWindowStart?.getTime() || 0;
+    const windowActive = windowStart && now - windowStart < LOGIN_ATTEMPT_WINDOW_MS;
+
+    const nextCount = windowActive ? (user.loginFailedAttempts || 0) + 1 : 1;
+    const update = {
+      loginFailedAttempts: nextCount,
+      loginFailedWindowStart: windowActive
+        ? user.loginFailedWindowStart
+        : new Date(now),
+    };
     let locked = false;
 
     if (nextCount >= LOGIN_MAX_ATTEMPTS) {
-      update.loginLockedUntil = new Date(Date.now() + LOGIN_LOCKOUT_MS);
+      update.loginLockedUntil = new Date(now + LOGIN_LOCKOUT_MS);
       locked = true;
     }
     await userModel.updateOne({ _id: user._id }, { $set: update });
@@ -219,6 +232,9 @@ export const login = asyncHandler(async (req, res, next) => {
       },
     });
 
+    if (locked) {
+      return next(httpError(429, LOGIN_LOCKED_MESSAGE));
+    }
     return next(httpError(401, "Invalid credentials"));
   }
 
@@ -233,7 +249,13 @@ export const login = asyncHandler(async (req, res, next) => {
   if (user.loginFailedAttempts > 0 || user.loginLockedUntil) {
     await userModel.updateOne(
       { _id: user._id },
-      { $set: { loginFailedAttempts: 0, loginLockedUntil: null } },
+      {
+        $set: {
+          loginFailedAttempts: 0,
+          loginLockedUntil: null,
+          loginFailedWindowStart: null,
+        },
+      },
     );
   }
 

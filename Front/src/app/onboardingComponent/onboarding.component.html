@@ -434,5 +434,15 @@
         </div>
       </div>
     }
+
+    <!-- ── Account switch (steps 1 & 2) ── -->
+    @if (step() !== 3) {
+      <div class="account-switch">
+        <span class="account-switch-text">Not the right account?</span>
+        <button type="button" class="account-switch-btn" (click)="signInWithAnotherAccount()">
+          Sign in with another account
+        </button>
+      </div>
+    }
   </div>
 </div>

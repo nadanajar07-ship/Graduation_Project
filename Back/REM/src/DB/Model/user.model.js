@@ -137,6 +137,11 @@ const userSchema = new Schema(
     // the lockout window expires. Tunables live in the login service.
     loginFailedAttempts: { type: Number, default: 0 },
     loginLockedUntil: { type: Date, default: null },
+    // Start of the current rolling failed-attempt window. Failures are
+    // only counted within LOGIN_ATTEMPT_WINDOW_MS of this timestamp; once
+    // the window lapses the counter restarts. This implements the
+    // "5 failed attempts within 5 minutes" rule.
+    loginFailedWindowStart: { type: Date, default: null },
 
     isDeleted: {
       type: Boolean,

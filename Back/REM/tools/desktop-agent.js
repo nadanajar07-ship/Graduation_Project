@@ -327,19 +327,25 @@ async function main() {
     process.exit(1);
   }
 
-  // Heartbeat
-  setInterval(sendHeartbeat, config.heartbeatSec * 1000).unref();
+  // Heartbeat — NOT unref()'d: this active handle is what keeps the Node
+  // event loop alive headlessly. (A never-resolving Promise does NOT keep
+  // the loop alive — only active handles do. Previously every timer was
+  // unref()'d, so the agent only survived in an interactive TTY where
+  // process.stdin held the loop open; run in the background / packaged it
+  // exited right after the first screenshot.)
+  setInterval(sendHeartbeat, config.heartbeatSec * 1000);
 
-  // Screenshots
+  // Screenshots — also ref'd so capture keeps running headlessly.
   if (!config.noScreenshots) {
     // Take one immediately so the user gets fast feedback
     captureAndUpload();
-    setInterval(captureAndUpload, config.intervalSec * 1000).unref();
+    setInterval(captureAndUpload, config.intervalSec * 1000);
   }
 
   log("running. press Ctrl+C to stop.");
 
-  // Keep the process alive forever (timers are .unref()'d, so this is needed)
+  // Belt-and-suspenders: the ref'd timers above already keep the process
+  // alive; this just parks main() so it never returns.
   await new Promise(() => {});
 }
 

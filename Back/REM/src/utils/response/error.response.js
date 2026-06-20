@@ -49,6 +49,29 @@ export const globalErrorHandling = (err, req, res, next) => {
       .json(buildErrorBody(err.cause, err.message, null, err));
   }
 
+  // http-errors / body-parser style errors (e.g. PayloadTooLargeError from
+  // express.json carries status 413, type "entity.too.large"). Respect the
+  // explicit client-error status instead of masking it as a generic 500 —
+  // and never leak a stack for these (buildErrorBody only attaches a stack
+  // for 5xx in dev).
+  const explicitStatus = err.statusCode || err.status;
+  if (
+    typeof explicitStatus === "number" &&
+    explicitStatus >= 400 &&
+    explicitStatus < 500
+  ) {
+    return res
+      .status(explicitStatus)
+      .json(
+        buildErrorBody(
+          explicitStatus,
+          err.expose ? err.message : "Request error",
+          null,
+          err,
+        ),
+      );
+  }
+
   // Unknown → 500 — structured log with full context
   logger.error(
     {

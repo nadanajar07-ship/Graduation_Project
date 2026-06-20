@@ -1,0 +1,181 @@
+<div class="ai-speech">
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="page-head">
+    <div>
+      <h1>AI Speech Analysis</h1>
+      <p class="subtitle">Acoustic emotion &amp; productivity insights · demo dataset</p>
+    </div>
+    <span class="demo-badge">Static Demo</span>
+  </header>
+
+  <!-- ── 1 + 2. Transcript / Translation ────────────────────── -->
+  <section class="grid-2 fade-in">
+    <div class="panel glass">
+      <div class="panel-head">
+        <span class="icon-chip chip-blue">abc</span>
+        <h2>Original Transcript</h2>
+      </div>
+      <p class="meta">Detected language: <code>{{ detectedLanguage }}</code></p>
+      <div class="text-box rtl">{{ transcriptAr() }}</div>
+    </div>
+
+    <div class="panel glass">
+      <div class="panel-head">
+        <span class="icon-chip chip-cyan">🌐</span>
+        <h2>English Translation</h2>
+      </div>
+      <p class="meta">Translated by {{ translationEngine }}</p>
+      <div class="text-box">{{ translationEn() }}</div>
+    </div>
+  </section>
+
+  <!-- ── 3. Acoustic conclusion ─────────────────────────────── -->
+  <section class="conclusion glass fade-in">
+    <div class="conclusion-top">
+      <span class="emoji-xl">{{ conclusion.emoji }}</span>
+      <div>
+        <p class="kicker">📋 Acoustic Conclusion</p>
+        <h2 class="emotion">{{ conclusion.emotion }}</h2>
+        <p class="confidence">
+          Confidence: <strong [class.low]="conclusion.confidence === 'Low'">{{ conclusion.confidence }}</strong>
+        </p>
+      </div>
+    </div>
+    <hr />
+    <p class="conclusion-desc">{{ conclusion.description }}</p>
+    <p class="conclusion-basis">Based on: {{ conclusion.basis }}</p>
+  </section>
+
+  <!-- ── 4. Metric cards ────────────────────────────────────── -->
+  <p class="audio-meta">
+    Audio duration: {{ audioDuration }} · All features extracted acoustically via librosa
+  </p>
+
+  <section class="metric-grid">
+    <article
+      class="metric-card glass fade-in"
+      *ngFor="let m of metrics(); let i = index"
+      [style.animation-delay.ms]="i * 60"
+    >
+      <header class="metric-head">
+        <span class="metric-title">{{ m.title }}</span>
+      </header>
+      <div class="metric-emoji">{{ m.icon }}</div>
+      <div class="metric-score" [style.color]="m.color">{{ m.score }}</div>
+      <div class="metric-out">/100</div>
+      <div class="bar">
+        <span class="bar-fill" [style.width.%]="m.score" [style.background]="m.color"></span>
+      </div>
+      <div class="metric-label">{{ m.label }}</div>
+      <div class="metric-sub">{{ m.sublabel }}</div>
+      <hr />
+      <div class="metric-detail">
+        <span *ngFor="let d of m.detail">{{ d }}</span>
+      </div>
+    </article>
+
+    <!-- 5. Pitch contour panel -->
+    <article class="metric-card pitch-panel glass fade-in">
+      <header class="metric-head">
+        <span class="metric-title">📈 Pitch Contour</span>
+      </header>
+      <div class="pitch-icon">↕</div>
+      <h3 class="pitch-type">{{ pitchContour.type }} ↕</h3>
+      <p class="pitch-note">{{ pitchContour.note }}</p>
+      <div class="pitch-detail">
+        <span>Pitch range: {{ pitchContour.range }} · Spread: {{ pitchContour.spread }}</span>
+        <span>Jitter: {{ pitchContour.jitter }} · Shimmer: {{ pitchContour.shimmer }}</span>
+      </div>
+      <svg class="contour-svg" viewBox="0 0 300 60" preserveAspectRatio="none">
+        <polyline
+          points="0,40 25,20 50,45 75,15 100,38 125,10 150,42 175,18 200,48 225,22 250,35 275,12 300,30"
+          fill="none"
+          stroke="#a855f7"
+          stroke-width="2"
+        />
+      </svg>
+    </article>
+  </section>
+
+  <!-- ── 6. Productivity analytics ──────────────────────────── -->
+  <section class="section-head">
+    <h2>Productivity Analytics</h2>
+    <span class="avg-pill">Avg productivity: {{ averageProductivity }}%</span>
+  </section>
+
+  <section class="grid-2 fade-in">
+    <div class="panel glass chart-panel">
+      <h3>Team activity breakdown</h3>
+      <div class="donut-wrap">
+        <svg viewBox="0 0 40 40" class="donut">
+          <circle class="donut-track" cx="20" cy="20" r="16" />
+          <circle
+            *ngFor="let s of teamPie()"
+            cx="20"
+            cy="20"
+            r="16"
+            fill="none"
+            [attr.stroke]="s.color"
+            stroke-width="6"
+            [attr.stroke-dasharray]="s.dash"
+            [attr.stroke-dashoffset]="s.offset"
+            transform="rotate(-90 20 20)"
+          />
+          <text x="20" y="21" class="donut-center">{{ teamBreakdown.productivePct }}%</text>
+        </svg>
+        <ul class="legend">
+          <li><span class="dot" [style.background]="catColors['productive']"></span>Productive · {{ teamBreakdown.productivePct }}%</li>
+          <li><span class="dot" [style.background]="catColors['neutral']"></span>Neutral · {{ teamBreakdown.neutralPct }}%</li>
+          <li><span class="dot" [style.background]="catColors['distracting']"></span>Distracting · {{ teamBreakdown.distractingPct }}%</li>
+          <li><span class="dot" [style.background]="catColors['idle']"></span>Idle · {{ teamBreakdown.idlePct }}%</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel glass chart-panel">
+      <h3>Per-user productivity score</h3>
+      <ul class="bar-list">
+        <li *ngFor="let e of employees()">
+          <span class="bar-name">{{ e.name }}</span>
+          <div class="hbar">
+            <span
+              class="hbar-fill"
+              [class]="scoreClass(e.productivityScore)"
+              [style.width.%]="(e.productivityScore / maxScore()) * 100"
+            ></span>
+          </div>
+          <span class="bar-val">{{ e.productivityScore }}</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 7. Team overview ───────────────────────────────────── -->
+  <section class="section-head"><h2>Team Overview</h2></section>
+
+  <section class="team-grid">
+    <article class="employee-card glass fade-in" *ngFor="let e of employees(); let i = index"
+             [style.animation-delay.ms]="i * 70">
+      <div class="emp-top">
+        <span class="avatar">{{ getInitial(e.name) }}</span>
+        <div>
+          <h4>{{ e.name }}</h4>
+          <span class="role-pill" [class.owner]="e.role === 'owner'" [class.admin]="e.role === 'admin'">{{ e.role }}</span>
+        </div>
+        <span class="emp-score" [class]="scoreClass(e.productivityScore)">{{ e.productivityScore }}</span>
+      </div>
+      <p class="emp-email">{{ e.email }}</p>
+      <div class="emp-stats">
+        <div><span class="stat-label">Active</span><span class="stat-val">{{ e.activeLabel }}</span></div>
+        <div><span class="stat-label">Idle</span><span class="stat-val">{{ e.idleLabel }}</span></div>
+        <div><span class="stat-label">Top app</span><span class="stat-val">{{ e.topApp }}</span></div>
+      </div>
+      <div class="emp-bar">
+        <span class="seg" [style.width.%]="e.breakdown.productivePct" [style.background]="catColors['productive']"></span>
+        <span class="seg" [style.width.%]="e.breakdown.neutralPct" [style.background]="catColors['neutral']"></span>
+        <span class="seg" [style.width.%]="e.breakdown.distractingPct" [style.background]="catColors['distracting']"></span>
+        <span class="seg" [style.width.%]="e.breakdown.idlePct" [style.background]="catColors['idle']"></span>
+      </div>
+    </article>
+  </section>
+</div>

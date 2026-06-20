@@ -694,6 +694,24 @@ export const registerCallSocket = (namespace) => {
           status: call.status,
         });
 
+        // Also notify each participant on their personal room. A callee who
+        // is still *ringing* (never accepted) has not joined the call:<id>
+        // socket room, so the broadcast above would never reach them — their
+        // incoming-call overlay and ringtone would hang until the 45s miss
+        // timeout (and if the caller cancels, that timeout is cleared, so it
+        // would hang indefinitely). Mirrors the CALL_MISSED notify pattern.
+        call.participants.forEach((p) => {
+          const pid = p.userId.toString();
+          if (pid === userId) return; // the ender already knows
+          namespace.to(`user_${pid}`).emit(EVENTS.CALL_ENDED, {
+            callId,
+            roomId: call.chatRoomId,
+            endedBy: userId,
+            durationSeconds: call.durationSeconds,
+            status: call.status,
+          });
+        });
+
         // also emit user-left so others can clean up the peer connection
         socket.to(`call:${callId}`).emit(EVENTS.CALL_USER_LEFT, {
           callId,

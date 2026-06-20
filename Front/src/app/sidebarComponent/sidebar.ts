@@ -114,6 +114,7 @@ export class SidebarComponent implements OnInit {
     ]},
     { title: 'Administration', items: [
       { label: 'AI Analytics',         route: '/dashboard/ai-analytics',            icon: this.ic.aiAnalytics, admin: true },
+      { label: 'AI Speech Analysis',   route: '/dashboard/ai-speech-analysis',      icon: this.ic.aiAnalytics, admin: true },
       { label: 'Activity',             route: '/dashboard/activity',                icon: this.ic.activity },
       { label: 'Audit Logs',           route: '/dashboard/audit-logs',              icon: this.ic.auditLogs,  admin: true },
       { label: 'Organization',         route: '/dashboard/org-settings',            icon: this.ic.org,        admin: true },
