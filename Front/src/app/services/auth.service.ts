@@ -13,8 +13,8 @@ export interface User {
   orgId?: string;
 }
 
-export const BASE        = 'http://localhost:3000';
-export const SOCKET_BASE = 'http://localhost:3000';
+export const BASE        = 'https://rem2.eu-central-1.elasticbeanstalk.com';
+export const SOCKET_BASE = 'https://rem2.eu-central-1.elasticbeanstalk.com';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
