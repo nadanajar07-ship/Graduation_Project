@@ -4,7 +4,8 @@ const TOKEN_B = process.env.TOKEN_B;
 const ROOM = process.env.ROOM_ID;
 const CONTENT = process.env.CONTENT || 'Hello from automated test (user B)';
 
-const socket = io('http://localhost:3001/chat', {
+const socket = io('https://rem2.eu-central-1.elasticbeanstalk.com', {
+  path: '/chat',
   auth: { authorization: `Bearer ${TOKEN_B}` },
   transports: ['websocket'],
 });
