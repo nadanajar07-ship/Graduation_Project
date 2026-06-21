@@ -1,4 +1,4 @@
-const BACKEND = 'http://localhost:3000';
+const BACKEND = 'https://rem2.eu-central-1.elasticbeanstalk.com';
 const base = { target: BACKEND, secure: false, changeOrigin: true };
 
 // For /invite: proxy API calls (XHR) but serve Angular SPA for browser navigation
